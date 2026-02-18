@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obstetrics Final Exam (100 Questions)</title>
+    <style>
+        :root {
+            /* Medical Theme Colors */
+            --primary: #005f73;      /* Deep Teal */
+            --secondary: #0a9396;    /* Soft Teal */
+            --accent: #94d2bd;       /* Light Mint */
+            --dark: #1d3557;         /* Navy */
+            --light: #f1faee;        /* Off-white */
+            --gray: #e9ecef;         /* Light Gray */
+            --text: #333333;         /* Dark Gray text */
+            
+            /* Status Colors */
+            --answered: #457b9d;     /* Blue */
+            --active: #e63946;       /* Red/Pink for current */
+            --correct: #2a9d8f;      /* Green */
+            --incorrect: #e76f51;    /* Red/Orange */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 60px;
+            z-index: 10;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer-container {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* --- Main Layout --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar (Question Palette) */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 1rem;
+        }
+
+        .p-btn {
+            aspect-ratio: 1;
+            border: 1px solid #ddd;
+            background: var(--gray);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .p-btn:hover { background: #dfe6e9; }
+        .p-btn.answered { background-color: var(--answered); color: white; border-color: var(--answered); }
+        .p-btn.active { border: 2px solid var(--dark); transform: scale(1.1); font-weight: bold; }
+        
+        /* Result States */
+        .p-btn.res-correct { background-color: var(--correct); color: white; }
+        .p-btn.res-incorrect { background-color: var(--incorrect); color: white; }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: white;
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 2rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .q-text {
+            font-size: 1.25rem;
+            color: var(--dark);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Options */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-item:hover {
+            border-color: var(--accent);
+            background-color: #fbfffe;
+        }
+
+        .option-item.selected {
+            border-color: var(--answered);
+            background-color: #f0f8ff;
+        }
+
+        .option-marker {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            margin-right: 15px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .option-item.selected .option-marker {
+            border-color: var(--answered);
+            background: var(--answered);
+            box-shadow: inset 0 0 0 3px white;
+        }
+
+        .option-text {
+            font-size: 1rem;
+        }
+
+        /* Footer Controls */
+        .footer-controls {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 2rem;
+        }
+
+        button.nav-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-prev { background: #e9ecef; color: var(--text); }
+        .btn-prev:hover { background: #dde1e3; }
+        
+        .btn-next { background: var(--primary); color: white; }
+        .btn-next:hover { background: #004e5f; }
+
+        .btn-finish { background: var(--incorrect); color: white; margin-left: auto; }
+        .btn-finish:hover { background: #c55338; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .modal h3 { color: var(--dark); margin-bottom: 1rem; }
+        .modal p { color: #666; margin-bottom: 2rem; }
+        .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+
+        /* Results Screen */
+        #results-screen {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 1.5rem auto;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .score-label { font-size: 1rem; font-weight: normal; opacity: 0.8; }
+        .pass-label { font-size: 1.5rem; font-weight: bold; padding: 5px 15px; border-radius: 4px; display: inline-block; }
+        .pass { color: var(--correct); background: #e0f2f1; }
+        .fail { color: var(--incorrect); background: #fbe9e7; }
+
+        /* Review Styles */
+        .review-item {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            border-left: 5px solid transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .review-item.correct { border-left-color: var(--correct); }
+        .review-item.incorrect { border-left-color: var(--incorrect); }
+        
+        .explanation-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #555;
+            border-left: 3px solid var(--secondary);
+        }
+        
+        .opt-review {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .opt-review.user-selected-wrong { background: #ffebee; border-color: #ffcdd2; color: #b71c1c; }
+        .opt-review.correct-answer { background: #e8f5e9; border-color: #c8e6c9; color: #1b5e20; font-weight: 600; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; }
+            .sidebar { 
+                width: 100%; 
+                height: 60px; /* Collapsed */
+                flex-direction: row; 
+                align-items: center;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+            .sidebar-header { display: none; }
+            .palette-grid {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+                gap: 10px;
+                width: 100%;
+            }
+            .p-btn {
+                min-width: 40px;
+                height: 40px;
+                flex-shrink: 0;
+            }
+            .footer-controls { padding-bottom: 50px; }
+            .content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <span>⚕️</span> OB/GYN Final Exam
+        </div>
+        <div class="timer-container" id="timer">180:00</div>
+        <div class="progress-text" id="progress-text">0 / 100 Answered</div>
+    </header>
+
+    <!-- Quiz View -->
+    <div class="main-container" id="quiz-view">
+        <!-- Sidebar Palette -->
+        <aside class="sidebar">
+            <div class="sidebar-header">Question Palette</div>
+            <div class="palette-grid" id="palette-container">
+                <!-- Javascript will generate 1-100 buttons here -->
+            </div>
+        </aside>
+
+        <!-- Main Question Area -->
+        <main class="content">
+            <div class="question-card">
+                <div class="q-header">
+                    <span id="q-number">Question 1</span>
+                    <span id="q-status">Not Answered</span>
+                </div>
+                <div class="q-text" id="q-text">
+                    Loading Question...
+                </div>
+                <div class="options-list" id="options-container">
+                    <!-- Options generated dynamically -->
+                </div>
+            </div>
+
+            <div class="footer-controls">
+                <button class="nav-btn btn-prev" id="btn-prev" onclick="changeQuestion(-1)">Previous</button>
+                <button class="nav-btn btn-next" id="btn-next" onclick="changeQuestion(1)">Next</button>
+                <div style="flex-grow:1"></div>
+                <button class="nav-btn btn-finish" onclick="showSubmitModal()">Finish Test</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Results View (Hidden Initially) -->
+    <div id="results-screen">
+        <div class="results-header">
+            <div class="score-circle">
+                <span id="score-display">0%</span>
+                <span class="score-label" id="score-fraction">0/100</span>
+            </div>
+            <div id="pass-fail-label" class="pass-label">--</div>
+            <p style="margin-top: 1rem; color: #666;">Scroll down to review detailed answers and explanations.</p>
+        </div>
+        <div id="review-container" style="max-width: 900px; margin: 0 auto;">
+            <!-- Detailed review items will be injected here -->
+        </div>
+    </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div class="modal-overlay" id="submit-modal">
+        <div class="modal">
+            <h3>Submit Exam?</h3>
+            <p>You cannot change your answers after submitting. Are you sure you are finished?</p>
+            <div class="modal-actions">
+                <button class="nav-btn btn-prev" onclick="closeSubmitModal()">Cancel</button>
+                <button class="nav-btn btn-finish" onclick="finishExam()">Yes, Submit</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    /**
+     *  -----------------------------------------------------------
+     *  DATA CONFIGURATION
+     *  Structure: 100 Questions total.
+     *  -----------------------------------------------------------
+     */
+    
+    // --- BATCH 1: QUESTIONS 1-20 ---
+    const batch1Data = [
+        {
+            question: `A 20-year-old G1 at 41 weeks has been pushing for 2½ hours. The fetal head is at the introitus and beginning to crown. It is necessary to cut an episiotomy. The tear extends through the sphincter of the rectum, but the rectal mucosa is intact. How should you classify this type of episiotomy?`,
+            options: ["First-degree", "Second-degree", "Third-degree", "Fourth-degree", "Mediolateral episiotomy"],
+            correctIndex: 2, // Third-degree
+            explanation: `A third-degree tear involves injury to the anal sphincter complex (external or internal anal sphincter) but the rectal mucosa remains intact. A fourth-degree tear would involve the rectal mucosa.`
+        },
+        {
+            question: `A 25-year-old G1P0 patient at 37 weeks presents to labor and delivery reporting gross rupture of membranes and painful uterine contractions. The tocometer shows contractions every 2 to 3 minutes, and the fetal heart tracing is category I. On cervical examination, she is 4-cm dilated and completely effaced with the presenting part at -3 station. The presenting part is soft and felt to be the fetal buttock. A bedside ultrasound reveals a breech presentation with both hips flexed and knees extended. The estimated weight of the fetus is approximately 6 lb. Which of the following is the best method to achieve delivery?`,
+            options: ["Deliver the fetus vaginally by breech extraction", "Deliver the baby vaginally after external cephalic version", "Perform an emergent cesarean delivery", "Perform an internal podalic version", "Perform a forceps-assisted vaginal breech delivery"],
+            correctIndex: 2, // Emergent C-section
+            explanation: `Cesarean delivery is generally the safest mode of delivery for a footling or nulliparous breech presentation in active labor, or when prerequisites for vaginal breech delivery are not fully met. Breech extraction is contraindicated for singleton fetuses. ECV is usually contraindicated in active labor with ruptured membranes.`
+        },
+        {
+            question: `( same previous patient ) What type of breech presentation is described?`,
+            options: ["Frank", "Incomplete, single footling", "Complete", "Double footling"],
+            correctIndex: 0, // Frank
+            explanation: `Frank breech is defined as hips flexed and knees extended (feet adjacent to the head). Complete breech is hips flexed and knees flexed.`
+        },
+        {
+            question: `A 24-year-old who delivered her first baby 5 weeks ago calls your office and asks to speak to you. She states that she is feeling very overwhelmed and anxious about taking care of her newborn son. She feels she cannot do anything right, and feels sad throughout the day. She tells you that she cries on most days, and is having difficulty sleeping at night. She also states she doesn’t feel like eating or doing any of her normal activities. She reports no suicidal or homicidal ideation. Which of the following is the most likely diagnosis?`,
+            options: ["Postpartum depression", "Maternity blues", "Postpartum psychosis", "bipolar disorder", "Postpartum blues"],
+            correctIndex: 0, // Postpartum depression
+            explanation: `Postpartum blues (Maternity blues) typically resolves within 2 weeks. Symptoms persisting beyond 2 weeks with functional impairment (anhedonia, sleep disturbance, sadness) are indicative of Postpartum Depression.`
+        },
+        {
+            question: `A 22-year-old G1P1 is brought to the emergency department by EMS after having a seizure at home. She is 2 weeks’ postpartum after an uncomplicated spontaneous vaginal delivery. She has no medical problems, and her pregnancy, labor, and immediate postpartum period were unremarkable. On arrival, her vitals were: blood pressure 165/95 mm HG, pulse 82 beats per minute, respiratory rate 20 breaths per minute. What is the most appropriate next step in management?`,
+            options: ["Begin magnesium sulfate therapy", "Request a neurology consult", "Order a head CT", "Start phenytoin therapy", "Order a toxicology screen"],
+            correctIndex: 0, // Mag Sulfate
+            explanation: `This patient presents with late postpartum eclampsia (seizures + hypertension). Magnesium sulfate is the first-line treatment for seizure prophylaxis and management in eclampsia.`
+        },
+        {
+            question: `A 24-year-old woman with epilepsy is planning a pregnancy. She currently takes Sodium Valproate. Which supplement dose is specifically recommended for her to reduce the risk of neural tube defects?`,
+            options: ["Folic acid 400 mcg daily", "Folic acid 5 mg daily", "Vitamin B12 1000 mcg daily", "Iron sulphate 200 mg daily"],
+            correctIndex: 1, // 5mg
+            explanation: `Women taking anti-epileptic drugs, especially Valproate, are at higher risk for fetal neural tube defects and require a high dose (5 mg) of folic acid compared to the standard 400 mcg.`
+        },
+        {
+            question: `A 32-year-old woman at 26 weeks gestation undergoes a 75g Oral Glucose Tolerance Test (OGTT). Her fasting glucose is 5.8 mmol/L and 2-hour glucose is 9.0 mmol/L. She has no history of diabetes. What is the most appropriate initial management?`,
+            options: ["Start Metformin immediately", "Start Insulin immediately", "Trial of diet and exercise for 1-2 weeks", "Repeat the OGTT in 4 weeks"],
+            correctIndex: 2, // Diet and exercise
+            explanation: `The values confirm Gestational Diabetes. The initial management for GDM (unless fasting levels are very high, typically >7.0 mmol/L) is a trial of diet and exercise for 1-2 weeks to achieve glycemic control.`
+        },
+        {
+            question: `A 30-year-old woman at 34 weeks complains of intense itching on her palms and soles, worse at night. She has no rash. Liver function tests show elevated bile acids. Which of the following complications is most associated with this condition?`,
+            options: ["Maternal coagulopathy", "Stillbirth (Intrauterine Fetal Death)", "Macrosomia", "Polyhydramnios"],
+            correctIndex: 1, // Stillbirth
+            explanation: `Intrahepatic Cholestasis of Pregnancy (ICP) is associated with an increased risk of sudden intrauterine fetal death, particularly at higher bile acid levels.`
+        },
+        {
+            question: `A 35-year-old woman at 28 weeks gestation presents with sudden onset shortness of breath and pleuritic chest pain. Her left calf is swollen and tender. What is the most appropriate diagnostic investigation?`,
+            options: ["D-Dimer", "CT Pulmonary Angiogram (CTPA) or V/Q Scan", "Chest X-ray only", "ECG only"],
+            correctIndex: 1, // CTPA or V/Q
+            explanation: `D-Dimer is physiologically elevated in pregnancy and is not specific. The diagnostic gold standards for Pulmonary Embolism in pregnancy are CTPA or V/Q scan.`
+        },
+        {
+            question: `A 29-year-old smoker at 35 weeks presents with severe continuous abdominal pain and dark vaginal bleeding. On examination, the uterus is "woody" hard and tender. The fetal heart rate is 90 bpm. What is the most likely diagnosis?`,
+            options: ["Placenta Previa", "Placental Abruption", "Vasa Previa", "Uterine Rupture"],
+            correctIndex: 1, // Abruption
+            explanation: `The classic triad of placental abruption is abdominal pain, vaginal bleeding (often dark), and uterine tenderness/hypertonus ('woody hard'). Fetal bradycardia indicates distress.`
+        },
+        {
+            question: `While monitoring a woman in labor, you notice the fetal heart rate drops after the peak of the contraction and takes 30 seconds to return to baseline after the contraction ends. This pattern repeats for 20 minutes. This is best described as:`,
+            options: ["Early decelerations", "Late decelerations", "Variable decelerations", "Accelerations"],
+            correctIndex: 1, // Late decelerations
+            explanation: `Late decelerations begin after the peak of the contraction and return to baseline after the contraction has finished. They are indicative of uteroplacental insufficiency.`
+        },
+        {
+            question: `Following a vaginal delivery, you examine the perineum. There is a tear involving the vaginal mucosa, perineal muscles, and the anal sphincter, but the rectal mucosa is intact. How is this tear classified?`,
+            options: ["Second degree", "Third degree (3a, 3b, or 3c)", "Fourth degree", "First degree"],
+            correctIndex: 1, // Third degree
+            explanation: `Injury to the anal sphincter complex without breach of the rectal mucosa is a Third-degree tear. Fourth-degree involves the rectal mucosa.`
+        },
+        {
+            question: `A woman in active labor has spontaneous rupture of membranes. The fetal heart rate immediately drops to 60 bpm. On examination, a loop of pulsating cord is felt in the vagina. While preparing for an emergency C-Section, what is the most important immediate action?`,
+            options: ["Push the cord back into the uterus", "Elevate the presenting part manually to relieve pressure on the cord", "Place the mother in a sitting position", "Clamp the cord"],
+            correctIndex: 1, // Elevate presenting part
+            explanation: `This is a cord prolapse. The immediate life-saving maneuver is to manually elevate the fetal presenting part off the cord to restore blood flow while transporting for C-section. Pushing the cord back can cause vasospasm.`
+        },
+        {
+            question: `A 25-year-old HIV-positive woman presents at 10 weeks gestation. She is currently not on medication. To minimize the risk of vertical transmission to the fetus, what is the most appropriate management?`,
+            options: ["Start Highly Active Antiretroviral Therapy (HAART) immediately", "Plan for Elective C-Section but no medication", "Start Zidovudine monotherapy at 28 weeks", "Avoid breastfeeding but no medication for the mother"],
+            correctIndex: 0, // Start HAART
+            explanation: `All HIV-positive pregnant women should commence HAART as soon as possible to suppress viral load and minimize the risk of mother-to-child transmission.`
+        },
+        {
+            question: `A 41-year-old primigravida presents for induction of labor at 41+3 weeks. On vaginal examination, you find the following:
+• Position: Posterior
+• Consistency: Medium
+• Dilation: 1 cm
+• Effacement: 50% (approx. 2 cm length)
+• Station: -3 (at the pelvic inlet)
+Based on the standard Bishop Score system, what is her total score?`,
+            options: ["2", "3", "4", "5"],
+            correctIndex: 1, // 3
+            explanation: `Bishop Score: Position Posterior(0) + Consistency Medium(1) + Dilation 1cm(1) + Effacement 50%(1) + Station -3(0) = 3.`
+        },
+        {
+            question: `A 30-year-old multipara (G3P2) is admitted for induction of labor at 39 weeks due to gestational diabetes. She has no contraindications to vaginal delivery. You perform a vaginal examination and note the following findings:
+• Cervical Position: Anterior
+• Consistency: Soft
+• Station: -1 (at the ischial spines)
+• Dilation: 3 cm
+• Effacement: 1-2 cm length (approx 50% effaced)
+Based on these findings, what is the most appropriate initial step for induction?`,
+            options: ["Administer Vaginal Dinoprostone (PGE2)", "Perform Artificial Rupture of Membranes (Amniotomy)", "Insert a cervical ripening balloon catheter", "Start IV Oxytocin infusion immediately with membranes intact"],
+            correctIndex: 1, // Amniotomy
+            explanation: `With a favorable cervix (Bishop score > 6, here it is likely ~7-8) and a dilated cervix (3cm) in a multiparous woman, Artificial Rupture of Membranes (Amniotomy) is the standard initial method for induction.`
+        },
+        {
+            question: `A 28-year-old woman (G1P1) has just delivered vaginally. She has a known history of severe asthma which is currently well-controlled. Following the delivery of the placenta, she develops uterine atony and has lost 1000ml of blood. Oxytocin bolus and infusion have been started, and the uterus remains boggy. Which uterotonic drug is strictly contraindicated in this specific patient?`,
+            options: ["Sublingual Misoprostol", "Intramuscular Ergometrine", "Intramuscular Carboprost (15-methyl PGF2α)", "Rectal Misoprostol"],
+            correctIndex: 2, // Carboprost
+            explanation: `Carboprost (Hemabate/Prostaglandin F2 alpha) causes bronchoconstriction and is contraindicated in patients with asthma.`
+        },
+        {
+            question: `A 19-year-old primigravida at 32 weeks presents with Pre-PROM (ruptured membranes 24 hours ago). She feels unwell. Vital signs: Temp 38.9°C, HR 125 bpm, RR 28/min, BP 85/45 mmHg. Fetal heart rate is 180 bpm. You suspect Chorioamnionitis with Septic Shock. Following the "Sepsis Six" bundle, you have established IV access and started high-flow oxygen. What is the most critical next pharmacological step?`,
+            options: ["Administer IV Magnesium Sulphate for neuroprotection", "Administer IM Corticosteroids for fetal lung maturity", "Administer IV Broad-spectrum Antibiotics", "Administer IV Tocolytics to stop contractions"],
+            correctIndex: 2, // Antibiotics
+            explanation: `In maternal sepsis/chorioamnionitis, the priority is immediate administration of IV Broad-spectrum antibiotics (within 1 hour). Tocolytics are contraindicated in chorioamnionitis.`
+        },
+        {
+            question: `A 24-year-old primigravida at 28 weeks gestation presents with a 3-day history of fever, headache, and joint pains. On examination, she is pale and lethargic. Her temperature is 39.0°C and blood glucose is 2.8 mmol/L (hypoglycemia). A blood film confirms Plasmodium falciparum malaria with high parasitemia. What is the gold-standard initial treatment?`,
+            options: ["Oral Artemether-Lumefantrine (Coartem)", "Intravenous Quinine", "Intravenous Artesunate", "Oral Sulfadoxine-Pyrimethamine (SP)"],
+            correctIndex: 2, // IV Artesunate
+            explanation: `Intravenous Artesunate is the first-line treatment for severe malaria in pregnancy (superior to Quinine in reducing mortality).`
+        },
+        {
+            question: `You are called to assess a primigravida who has been pushing for 2 hours. She is exhausted. Examination shows: Fully dilated cervix, membranes ruptured, bladder empty. The fetal head is 1/5 palpable per abdomen. On vaginal exam, the position is Mentum Posterior . The fetal heart rate is normal. Can you perform an instrumental delivery?`,
+            options: ["Yes, using Neville-Barnes Forceps", "Yes, using a Ventouse (Vacuum) cup", "No, Manual Rotation is required first", "No, Caesarean Section is indicated"],
+            correctIndex: 3, // No, CS
+            explanation: `A Mentum Posterior (Face presentation with chin posterior) cannot deliver vaginally because the fetal neck cannot extend further to negotiate the pelvic curve. Caesarean section is indicated.`
+        }
+    ];
+
+    // --- BATCH 2: QUESTIONS 21-40 ---
+    const batch2Data = [
+        {
+            question: `A 23-year-old woman, G1P0, presents at 6 weeks of gestation with mild vaginal bleeding and no abdominal pain. She has no significant medical history. On pelvic examination, the cervix is closed, and transvaginal ultrasound reveals a viable intrauterine pregnancy with fetal heart activity.
+What is the most likely diagnosis?`,
+            options: ["Threatened abortion", "Missed abortion", "Incomplete abortion", "Complete abortion", "Inevitable abortion"],
+            correctIndex: 0, // Threatened
+            explanation: `Vaginal bleeding before 20 weeks with a closed cervix and a viable fetus is defined as a Threatened Abortion.`
+        },
+        {
+            question: `A 29-year-old woman, G2P1, at 10 weeks of gestation presents with high fever, chills, lower abdominal pain, and foul-smelling vaginal discharge. She had self-administered an unknown medication to induce abortion three days ago. On examination, she is febrile (39.2°C), tachycardic (HR 110 bpm), and has lower abdominal tenderness.
+What is the next best step in management?`,
+            options: ["Administer broad-spectrum IV antibiotics and perform urgent surgical evacuation", "Expectant management with oral antibiotics", "Suction curettage only", "Give methotrexate and observe", "Administer progesterone and bed rest"],
+            correctIndex: 0, // Antibiotics + Evacuation
+            explanation: `This is a Septic Abortion. Immediate stabilization with broad-spectrum IV antibiotics followed by evacuation of the retained products (source control) is required.`
+        },
+        {
+            question: `A 30-year-old woman underwent an assisted vaginal delivery with forceps due to prolonged second stage. The newborn has bruising over the face and scalp with slight asymmetry of the head. The baby’s Moro reflex is absent on the affected side.
+What is the most likely neonatal complication of forceps delivery?`,
+            options: ["Cephalohematoma", "Brachial plexus injury", "Clavicle fracture", "Facial nerve palsy", "Neonatal meningitis"],
+            correctIndex: 3, // Facial Nerve Palsy
+            explanation: `Facial nerve palsy is a specific complication of forceps use due to pressure on the facial nerve. (Note: An absent Moro reflex is more typically associated with brachial plexus injury or clavicle fracture, but given the specific context of forceps and facial bruising/asymmetry, facial nerve injury is the intended forceps-specific answer here).`
+        },
+        {
+            question: `A 30-year-old G1 at 6 weeks’ gestation by last menstrual period presents for prenatal care. Her past medical history is significant for type 1 diabetes, which was diagnosed at the age of 14.
+ What should you tell her about her insulin requirements during pregnancy?`,
+            options: ["Her insulin requirement will not change during pregnancy.", "She will require less insulin due to increased sensitivity to insulin during pregnancy.", "She will require less insulin during pregnancy because she will experience decreased insulin resistance.", "As long as her glycosylated hemoglobin A1c (Hb A1c) is less than 6%, she will not require any changes in her insulin management during pregnancy.", "She should expect her insulin requirement to increase throughout the pregnancy."],
+            correctIndex: 4, // Increase
+            explanation: `Pregnancy is a diabetogenic state due to human placental lactogen (hPL), which causes insulin resistance. Insulin requirements typically increase as pregnancy progresses.`
+        },
+        {
+            question: `Which of the following is the most common birth defect associated with diabetes?`,
+            options: ["Anencephaly", "Encephalocele", "Meningomyelocele", "Sacral agenesis", "Ventricular septal defect"],
+            correctIndex: 4, // VSD (Cardiac)
+            explanation: `While Sacral Agenesis is the most *specific* anomaly to diabetes, Cardiac anomalies (like VSD) are the *most common* overall.`
+        },
+        {
+            question: `A 40-year-old P2002 at 37 weeks presents for her routine OB visit. Her pregnancy has been complicated by obesity and gestational diabetes mellitus (GDM) that has been well controlled with diet. Her blood sugar log shows that her fasting and postprandial values have all been within the normal range. Her fetus has an estimated fetal weight of 6½ lb by Leopold maneuvers. This patient asks you if GDM has any long-term implications for her. Which of the following statements should be included in your counseling?`,
+            options: ["GDM resolves following delivery, and she does not need any follow up.", "She has an increased risk of developing type 2 diabetes later in life.", "She should have her hemoglobin A1c tested at her postpartum visit, and if elevated, she likely has type 2 diabetes.", "She should have a fasting glucose tested on postpartum day 1, and if elevated, she likely has type 2 diabetes.", "She should follow a diabetic diet for the rest of her life."],
+            correctIndex: 1, // Risk of T2DM
+            explanation: `Women with GDM have a significantly increased risk (up to 50%) of developing Type 2 Diabetes later in life.`
+        },
+        {
+            question: `A 38-year-old woman with a history of placenta previa undergoes a cesarean delivery. During the operation, massive hemorrhage occurs due to abnormal placental adherence to the uterine wall. What is the most likely cause of postpartum hemorrhage?`,
+            options: ["Uterine atony", "Placenta accreta", "Vaginal laceration", "Coagulopathy"],
+            correctIndex: 1, // Accreta
+            explanation: `Placenta Accreta spectrum is characterized by abnormal adherence of the placenta to the myometrium. The combination of Placenta Previa and prior Cesarean section is the strongest risk factor.`
+        },
+        {
+            question: `A 24-year-old G1P0 woman at 36 weeks gestation presents with preeclampsia and severe features, including BP of 170/110 mmHg and headache. She is in latent labour with cervical dilation of 2 cm. What is the next best step?`,
+            options: ["Administer magnesium sulfate and proceed with induction of labour", "Monitor BP and allow labour to progress spontaneously", "Perform an emergency cesarean section", "Administer nifedipine and discharge home"],
+            correctIndex: 0, // Mag + Induction
+            explanation: `For Preeclampsia with Severe Features at >34 weeks, the management is stabilization (Magnesium Sulfate for seizure prophylaxis + Antihypertensives) followed by delivery. Induction is preferred over C-section if maternal/fetal status allows.`
+        },
+        {
+            question: `A 27-year-old G3P2 woman at 38 weeks gestation presents in active labour. She suddenly develops vaginal bleeding and fetal bradycardia. Speculum examination reveals a pulsatile structure in the vaginal canal. What is the most likely diagnosis?`,
+            options: ["Placental abruption", "Uterine rupture", "Vasa previa", "Cervical laceration"],
+            correctIndex: 2, // Vasa Previa
+            explanation: `Vasa Previa presents with the classic triad: Membrane rupture, Painless vaginal bleeding, and Fetal Bradycardia (or sinusoidal pattern) due to vessel rupture. The "pulsatile structure" is the fetal vessel.`
+        },
+        {
+            question: `A 22-year-old primigravida presents to your office for a routine OB visit at 34 weeks’ gestational age. She voices concern because she has noticed an increasing number of spidery veins appearing on her face, upper chest, and arms. She is upset with the unsightly appearance of these veins and wants to know what you recommend to get rid of them. How should you counsel this patient?`,
+            options: ["Tell her that this is a condition which requires evaluation by a vascular surgeon.", "Tell her that you are concerned that she may have serious liver disease and order liver function tests.", "Tell her that you are going to refer her to a dermatologist for further workup and evaluation.", "Tell her that the appearance of these blood vessels is a normal occurrence with pregnancy.", "Tell her to wear an abdominal binder."],
+            correctIndex: 3, // Normal
+            explanation: `Spider angiomas (telangiectasias) are a normal physiological change in pregnancy due to high levels of circulating estrogen. They typically resolve postpartum.`
+        },
+        {
+            question: `During routine ultrasound surveillance of a twin pregnancy, twin A weighs 1200 g and twin B weighs 750 g. Polyhydramnios is noted around twin A, while twin B has oligohydramnios. Which of the following statements correctly describes this syndrome?`,
+            options: ["The donor twin develops polyhydramnios more often than the recipient twin.", "Gross differences may be observed between donor and recipient placentas.", "The donor twin usually suffers from a hemolytic anemia.", "The donor twin is more likely to develop widespread thromboses.", "The donor twin often develops polycythemia."],
+            correctIndex: 2, // Anemia
+            explanation: `In Twin-Twin Transfusion Syndrome (TTTS): Twin A (Poly + Large) is the Recipient. Twin B (Oligo + Small) is the Donor. The Donor becomes anemic (low volume) and the Recipient becomes polycythemic (high volume). Thus, option C ("Donor suffers anemia") is the correct physiological description, even though it is not strictly 'hemolytic'. Options D and E incorrectly assign Recipient complications to the Donor.`
+        },
+        {
+            question: `A 34-year-old G4P3003 at 31 weeks’ gestation with a known placenta previa presents to the hospital with vaginal bleeding. On assessment, she has normal vital signs, a reactive fetal heart tracing, and no uterine contractions. Heavy vaginal bleeding is noted.
+Which of the following is the best next step in the management of this patient?`,
+            options: ["Administer intramuscular terbutaline", "Administer methylergonovine", "Admit and stabilize the patient", "Perform cesarean delivery", "Induce labor"],
+            correctIndex: 2, // Admit
+            explanation: `In a preterm patient with Placenta Previa who is stable (no distress, bleeding controlled/stopped), expectant management (admit, steroids, monitor) is indicated to prolong pregnancy.`
+        },
+        {
+            question: `A 38-year-old G4P3 at 33 weeks’ gestation presents for a routine OB visit, and is noted to have a fundal height of 29 cm. An ultrasound is performed, and demonstrates an EFW in the 5 percentile for the gestational age. The biparietal diameter and abdominal circumference are concordant in size.
+Which of the following is associated with symmetric growth restriction?`,
+            options: ["Nutritional deficiencies", "Chromosome abnormalities", "Hypertension", "Uteroplacental insufficiency", "Gestational diabetes"],
+            correctIndex: 1, // Chromosomal
+            explanation: `Symmetric IUGR (head and body both small) typically implies an insult early in pregnancy, such as Chromosomal abnormalities (aneuploidy) or intrauterine infection (TORCH). Asymmetric IUGR is usually due to uteroplacental insufficiency.`
+        },
+        {
+            question: `A 38-year-old G4P3 at 33 weeks’ gestation presents for a routine OB visit, and is noted to have a fundal height of 29 cm. An ultrasound is performed, and demonstrates an EFW in the 5 percentile for the gestational age. The biparietal diameter and abdominal circumference are concordant in size.
+Which of the following factors would indicate that this fetus needs to be delivered?`,
+            options: ["A biophysical profile (BPP) of 8/10", "Estimated fetal weight (EFW) in the 5 percentile", "Normal umbilical artery dopplers", "Absence of interval growth on a repeat ultrasound in 2 weeks", "Amniocentesis demonstrating fetal trisomy 21"],
+            correctIndex: 3, // No growth
+            explanation: `Lack of interval growth over 2-3 weeks is a sign of severe growth restriction/arrest and is an indication for delivery to prevent fetal death.`
+        },
+        {
+            question: `A 39-year-old G2P1001 at 39 weeks’ gestational age is sent to labor and delivery from her obstetrician’s office because of a blood pressure reading of 150/100 mm Hg obtained during a routine OB visit. Her baseline blood pressures during the pregnancy were 100 to 120/60 mm Hg to 70 mm Hg. On arrival to labor and delivery, the patient reports no headache, visual changes, nausea, vomiting, or abdominal pain. The heart rate strip is reactive and the tocodynamometer shows irregular uterine contractions. The patient’s cervix is 3 cm dilated. Her repeat blood pressure is 160/90 mm Hg. Hematocrit is 34.0%, platelets are 90,000 mL, SGOT is 22 units per liter, SGPT is 15 units per liter, and urinalysis is negative for protein.
+Which of the following is the most correct diagnosis?`,
+            options: ["Preeclampsia", "Preeclampsia with severe features", "Chronic hypertension with superimposed preeclampsia", "Eclampsia", "Gestational hypertension"],
+            correctIndex: 1, // Severe
+            explanation: `Platelet count less than 100,000/microL is a diagnostic criterion for Preeclampsia with Severe Features, even if proteinuria is absent.`
+        },
+        {
+            question: `The decision is made to deliver the patient (same patient in the  previous question) promptly. Which factors will help you determine the best mode of delivery?`,
+            options: ["The patient has advanced maternal age, and therefore must be delivered by cesarean immediately.", "The patient’s cervix is 3 cm dilated, and therefore must undergo induction of labor.", "The patient has low platelets, so she must undergo induction of labor because surgery could cause significant hemorrhage.", "The patient had a seizure, and therefore must be delivered immediate by cesarean.", "The patient is a candidate for labor induction or cesarean delivery if the fetal and maternal status are reassuring after her seizure."],
+            correctIndex: 4, // Candidate for either
+            explanation: `There is no absolute contraindication to induction of labor for preeclampsia/eclampsia if the patient is stable. Vaginal delivery is generally preferred, but Cesarean is performed for obstetric indications.`
+        },
+        {
+            question: `A 27-year-old G2P1 at 38 weeks’ gestation is admitted in active labor. She has had one prior uncomplicated vaginal delivery and has no medical problems. She reports an allergy to penicillin, and says she had a rash. Her vital signs are normal, and the fetal heart tracing is category I. Her prenatal record indicates that her group B Streptococcus (GBS) culture at 36 weeks was positive. What is the best choice for antibiotic prophylaxis during labor?`,
+            options: ["Cefazolin", "Clindamycin", "Erythromycin", "Desensitization then treatment with penicillin", "Vancomycin"],
+            correctIndex: 0, // Cefazolin
+            explanation: `For GBS prophylaxis in women with a Penicillin allergy that is low-risk (e.g., non-urticarial rash), Cefazolin is the drug of choice. Clindamycin/Vancomycin are reserved for severe/high-risk allergies (anaphylaxis).`
+        },
+        {
+            question: `A 32-year-old G3P2 at 39 weeks’ gestation presented to labor delivery with ruptured membranes. On examination, she was contracting regularly, and her cervix was 4-cm dilated. Her history was significant for two prior vaginal deliveries, with her largest child weighing 3800 g. Over the next 2 hours she progressed to 7-cm dilation. Four hours later, she remained 7-cm dilated. She had regular contractions and IUPC showed MVUs of 220. The estimated fetal weight by ultrasound was 3200 g. Which of the following labor abnormalities best describes this patient?`,
+            options: ["Prolonged latent phase", "Protracted active phase", "Hypertonic dysfunction", "Secondary arrest of dilation", "Second stage arrest"],
+            correctIndex: 3, // Secondary arrest
+            explanation: `Secondary arrest of dilation is defined as the cessation of dilation for 2 hours or more (or 4 hours in modern definitions) despite adequate uterine contractions (MVUs > 200) in the active phase.`
+        },
+        {
+            question: `You are delivering a 26-year-old G3P2002 at 40 weeks’ gestation. She has a history of two previous uncomplicated vaginal deliveries, and has had no problems during this pregnancy. After 15 minutes of pushing, the baby’s head delivers spontaneously, but then retracts back against the perineum. As you apply gentle downward traction to the head, the baby’s anterior shoulder fails to deliver.
+ Which of the following is the best next step in the management of this patient?`,
+            options: ["Call for help", "Cut a symphysiotomy", "Instruct the nurse to apply fundal pressure", "Perform a Zavanelli maneuver", "Push the baby’s head back into the pelvis"],
+            correctIndex: 0, // Call for help
+            explanation: `This is Shoulder Dystocia (Turtle Sign). The immediate first step is to Call for Help. The first *maneuver* is typically McRoberts, but calling for help/anesthesia/pediatrics is the priority.`
+        },
+        {
+            question: `( same previous patient ) After performing the appropriate maneuvers, the baby finally delivers. The pediatricians note that the right arm is hanging limply to the baby’s side with the forearm extended and internally rotated. Which of the following is the baby’s most likely diagnosis?`,
+            options: ["Erb palsy", "Klumpke paralysis", "Humeral fracture", "Clavicular fracture", "Paralysis from intraventricular bleed"],
+            correctIndex: 0, // Erb Palsy
+            explanation: `This is the classic "Waiter's Tip" posture indicative of Erb's Palsy (Injury to C5-C6 nerve roots).`
+        }
+    ];
+
+    // --- BATCH 3: QUESTIONS 41-70 ---
+    const batch3Data = [
+        {
+            question: `A 25-year-old at 30 weeks has fundal height measuring 25 weeks. Ultrasound shows estimated fetal weight <5th percentile and reduced amniotic fluid. Umbilical artery Doppler shows absent end-diastolic flow.
+Most appropriate management?`,
+            options: ["Routine follow-up in 2 weeks", "Immediate induction", "Close surveillance and consider early delivery", "Tocolysis"],
+            correctIndex: 2, // Close surveillance/delivery
+            explanation: `Absent end-diastolic flow (AEDF) is a sign of significant placental insufficiency and high risk of fetal demise. It requires intensive surveillance (often daily BPP) and administration of corticosteroids, with delivery usually indicated by 32-34 weeks or sooner if testing worsens (e.g., reversed flow).`
+        },
+        {
+            question: `A 26-year-old G3P0030 has had three consecutive spontaneous abortions in the first trimester. As part of an evaluation for this problem, which of the following tests is most appropriate in the evaluation of this patient?`,
+            options: ["Hysterosalpingogram", "Chromosomal analysis of the couple", "Endometrial biopsy in the luteal phase", "Postcoital test", "Cervical length by ultrasonography"],
+            correctIndex: 0, // HSG
+            explanation: `For Recurrent Pregnancy Loss (RPL), evaluation of uterine anatomy (via HSG or Sonohysterography) is a primary step to rule out septate uterus or other anomalies. (Note: Karyotyping couples is also done, but anatomical assessment is often the first structural test).`
+        },
+        {
+            question: `A patient presents for prenatal care in the second trimester. She was born outside the United States and has never had any routine vaccinations. Which of the following vaccines is contraindicated in pregnancy?`,
+            options: ["Injectable influenza vaccine", "Tetanus toxoid", "Reduced diphtheria toxoid and acellular pertussis (Tdap)", "Hepatitis B", "Measles, mumps, and rubella (MMR)"],
+            correctIndex: 4, // MMR
+            explanation: `Live attenuated vaccines, such as MMR (Measles, Mumps, Rubella) and Varicella, are contraindicated in pregnancy due to the theoretical risk of fetal infection.`
+        },
+        {
+            question: `A 17-year-old woman at 22 weeks’ gestation presents to the emergency department with a 3-day history of nausea, vomiting, and abdominal pain. The pain started in the middle of the abdomen, and is now located along her mid-to-upper right side. She is noted to have a temperature of 38.4°C (101.1°F). She reports no prior medical problems or surgeries. How does pregnancy alter the diagnosis and treatment of the disease?`,
+            options: ["Owing to anatomical and physiological changes in pregnancy, diagnosis is easier to make.", "Surgical treatment should be delayed since the patient is pregnant.", "Fetal outcome is improved with delayed diagnosis.", "The incidence is unchanged in pregnancy.", "The incidence is higher in pregnancy."],
+            correctIndex: 3, // Incidence unchanged
+            explanation: `Appendicitis is the most common non-obstetric surgical emergency in pregnancy. Its incidence is the same as in non-pregnant women (approx 1/1500). However, the appendix is displaced upward and outward by the uterus, making diagnosis more difficult.`
+        },
+        {
+            question: `A patient presents in labor at term. Clinical pelvimetry is performed. She has an oval-shaped pelvis with the anteroposterior (AP) diameter at the pelvic inlet greater than the transverse diameter. The baby is occiput posterior. The patient most likely has what kind of pelvis?`,
+            options: ["A gynecoid pelvis", "An android pelvis", "An anthropoid pelvis", "A platypelloid pelvis", "An androgenous pelvis"],
+            correctIndex: 2, // Anthropoid
+            explanation: `An Anthropoid pelvis is oval with a long AP diameter and narrow transverse diameter. It commonly favors the Occiput Posterior (OP) position.`
+        },
+        {
+            question: `Pelvic examination is performed in a 34-year-old P0101 at 34 weeks’ gestation who is in labor. The patient is noted to be 6 cm dilated, and completely effaced with the fetal nose and mouth palpable. The chin is pointing toward the maternal left hip. This is an example of which of the following?`,
+            options: ["Transverse lie", "Mentum transverse position", "Occiput transverse position", "Brow presentation", "Vertex presentation"],
+            correctIndex: 1, // Mentum Transverse
+            explanation: `If the nose/mouth are palpable and the chin (Mentum) is pointing to the hip (Transverse), it is a Face Presentation in the Mentum Transverse position.`
+        },
+        {
+            question: `You are counseling a 36-year-old obese, Hispanic G2P1 at 36 weeks’ gestation about route of delivery. During her first pregnancy, she was induced at 41 weeks’ gestation for mild preeclampsia, and delivered by cesarean as a result of fetal distress during her induction. The patient would like to know if she can have a trial of labor after cesarean (TOLAC) with this pregnancy. Which of the following is the best response to this patient?`,
+            options: ["No, since she has never had a vaginal delivery.", "Yes, but only if she had a low transverse uterine incision.", "No, because once she has had a cesarean delivery, she must deliver all of her subsequent children by cesarean.", "Yes, but only if her skin incision was a Pfannensteil.", "Yes, but she must wait until she goes into labor spontaneously to have a repeat cesarean."],
+            correctIndex: 1, // Low Transverse
+            explanation: `TOLAC is generally safe and recommended if the previous incision was a Low Transverse uterine incision (not vertical/classical). The indication for the prior C-section (fetal distress) is non-recurrent, making her a good candidate.`
+        },
+        {
+            question: `A patient at 17 weeks’ gestation is diagnosed with an intrauterine fetal demise. She desires expectant management. She returns to your office 5 weeks later, and her vital signs are—blood pressure 110/72 mm Hg, pulse 93 beats per minute, temperature 36.38°C, respiratory rate 16 breaths per minute. She has not had a miscarriage, although she has had some occasional spotting. Her cervix is closed on examination. This patient is at increased risk for which of the following?`,
+            options: ["Septic abortion", "Recurrent abortion", "Consumptive coagulopathy", "Future infertility", "Ectopic pregnancies"],
+            correctIndex: 2, // DIC
+            explanation: `Prolonged retention of a dead fetus (> 4 weeks) can lead to the release of thromboplastin from the decomposing tissues, triggering Disseminated Intravascular Coagulation (Consumptive Coagulopathy).`
+        },
+        {
+            question: `A 24-year-old G1P0 presents at 30 weeks’ gestation for a new OB visit. She provides you with the official report of a dating ultrasound performed at 12 weeks; however, shortly thereafter, she moved out of state and has not had prenatal care. She has no medical problems, and has a normal BMI. She reports some abdominal cramping and shortness of breath. During her visit, you examine her cervix and it is closed. You measure her fundal height at 50 cm.
+ What is the next best step in management?`,
+            options: ["Order an ultrasound", "Tell the patient that she is most likely having twins", "Teach her how to do fetal kick counts, and instruct her to return in 1 week", "Tell her that her baby will be very large and recommend a caesarean delivery", "Order a glucose tolerance test"],
+            correctIndex: 0, // Ultrasound
+            explanation: `A fundal height of 50cm at 30 weeks is significantly large for dates ("Size greater than dates"). The immediate next step is an Ultrasound to determine the etiology (Polyhydramnios, Macrosomia, Multiple Gestation).`
+        },
+        {
+            question: `( same previous patient ) An ultrasound is performed, and demonstrates a singleton fetus with an estimated fetal weight (EFW) in the 53 percentile. The amniotic fluid index is 30 cm, consistent with a diagnosis of polyhydramnios. How should you counsel this patient?`,
+            options: ["She does not require any further evaluation.", "The incidence of associated malformations is approximately 3%.", "Maternal edema, especially of the lower extremities and vulva, is rare.", "Esophageal atresia is accompanied by polyhydramnios in nearly 10% of cases.", "Potential complications include placental abruption, uterine dysfunction, and postpartum hemorrhage."],
+            correctIndex: 4, // Complications
+            explanation: `Polyhydramnios increases the risk of uterine overdistension, leading to complications such as Placental Abruption (upon rapid decompression), Uterine Atony (PPH), and Preterm Labor.`
+        },
+        {
+            question: `An 18-year-old patient presents to you for evaluation because she has not yet started her period. On physical examination, she is 5 ft 7 in tall. She has minimal breast development and no axillary or pubic hair. On pelvic examination, she has a normally developed vagina. A cervix is visible. The uterus is palpable, as are normal ovaries. Which of the following is the best next step in the evaluation of this patient?`,
+            options: ["Draw her blood for a karyotype.", "Test her sense of smell.", "Draw her blood for TSH, FSH, and LH levels.", "Order an MRI of the brain to evaluate the pituitary gland.", "Prescribe a progesterone challenge to see if she will have a withdrawal bleed."],
+            correctIndex: 2, // FSH/LH
+            explanation: `In a patient with Primary Amenorrhea and lack of secondary sexual characteristics (delayed puberty), the first step is to distinguish between central (hypogonadotropic) and ovarian (hypergonadotropic) causes by checking FSH/LH.`
+        },
+        {
+            question: `A 28-year-old G3P0 has a history of severe menstrual cramps, prolonged, heavy periods, chronic pelvic pain, and painful intercourse. All of her pregnancies were spontaneous abortions in the first trimester. A hysterosalpingogram (HSG) she just had as part of the evaluation for recurrent abortion showed a large uterine septum. You have recommended surgical repair of the uterus. Of the patient’s symptoms, which is most likely to be corrected by resection of the uterine septum?`,
+            options: ["Habitual abortion", "Dysmenorrhea", "Menometrorrhagia", "Dyspareunia", "Chronic pelvic pain"],
+            correctIndex: 0, // Habitual abortion
+            explanation: `Septate uterus is strongly associated with Recurrent Pregnancy Loss (Habitual Abortion) due to poor implantation on the avascular septum. Resection significantly improves live birth rates.`
+        },
+        {
+            question: `A 24-year-old woman with irregular menses, acne, and hirsutism is evaluated for infertility. BMI is 33 kg/m². Ultrasound shows enlarged ovaries with multiple peripheral follicles. Which hormonal pattern is most consistent with her condition?`,
+            options: ["Low LH, low FSH", "High FSH, low LH", "High LH:FSH ratio", "High prolactin, low FSH"],
+            correctIndex: 2, // High LH:FSH
+            explanation: `This is classic Polycystic Ovarian Syndrome (PCOS). A characteristic hormonal finding is an elevated LH to FSH ratio (typically > 2:1 or 3:1).`
+        },
+        {
+            question: `A 32-year-old woman presents with heavy menstrual bleeding for the past 8 months. Cycles are regular but last 9–10 days with passage of clots. She feels fatigued. Pelvic examination shows a bulky, irregularly enlarged uterus equivalent to 12 weeks size. Hemoglobin is 8.9 g/dL. What is the most likely diagnosis?`,
+            options: ["Adenomyosis", "Subserosal fibroid", "Intramural fibroid", "Endometrial polyp"],
+            correctIndex: 2, // Intramural fibroid
+            explanation: `An irregularly enlarged, bulky uterus causing menorrhagia is most characteristic of Uterine Fibroids (Leiomyomata). Intramural or Submucosal fibroids are most likely to cause heavy bleeding.`
+        },
+        {
+            question: `A 27-year-old woman presents with acute lower abdominal pain and fever. Cervical motion tenderness and purulent discharge are noted. Pregnancy test is negative. What is the most appropriate initial management?`,
+            options: ["Immediate laparoscopy", "Broad-spectrum intravenous antibiotics", "Oral antifungal therapy", "Endometrial biopsy"],
+            correctIndex: 1, // Antibiotics
+            explanation: `The clinical picture (CMT, fever, discharge, pain) strongly suggests Pelvic Inflammatory Disease (PID). Initial management is broad-spectrum antibiotics (e.g., Ceftriaxone + Doxycycline).`
+        },
+        {
+            question: `A 28-year-old nulligravid patient complains of bleeding between her periods and increasingly heavy menses. Over the past 9 months, a trial of oral contraceptives and NSAIDs have failed to decrease the heavy bleeding. Which of the following options is most appropriate at this time?`,
+            options: ["Perform a hysterectomy.", "Perform hysteroscopy.", "Perform endometrial ablation.", "Treat with a GnRH agonist.", "Start the patient on a high-dose progestational agent."],
+            correctIndex: 1, // Hysteroscopy
+            explanation: `In a patient with Abnormal Uterine Bleeding (AUB) unresponsive to medical therapy, diagnostic evaluation of the uterine cavity (Hysteroscopy) is indicated to rule out structural causes like polyps or submucosal fibroids.`
+        },
+        {
+            question: `A 36-year-old morbidly obese woman presents to your office for evaluation of irregular, heavy menses occurring every 3 to 6 months. An office endometrial biopsy shows complex hyperplasia of the endometrium without atypia. The hyperplasia is most likely related to the excess formation in the patient’s adipose tissue of which of the following hormones?`,
+            options: ["Estriol", "Estradiol", "Estrone", "Androstenedione", "Dehydroepiandrosterone"],
+            correctIndex: 2, // Estrone
+            explanation: `Adipose tissue contains aromatase, which converts Androstenedione into Estrone. This unopposed estrogen (Estrone) leads to endometrial hyperplasia.`
+        },
+        {
+            question: `A 21-year-old woman presents to your office for her well-woman examination. She has recently become sexually active and desires an effective contraceptive method. She has no medical problems, but family history is significant for breast cancer in a maternal aunt at the age of 42 years. She is worried about getting cancer from taking birth control pills. You discuss with her the risks and benefits of contraceptive pills. You tell her that which of the following neoplasms has been associated with the use of oral contraceptives?`,
+            options: ["Breast cancer", "Ovarian cancer", "Endometrial cancer", "Hepatic cancer", "Hepatic adenoma"],
+            correctIndex: 4, // Hepatic adenoma
+            explanation: `Oral contraceptives are protective against Ovarian and Endometrial cancer. There is a rare but established association with benign Hepatic Adenomas.`
+        },
+        {
+            question: `A 32-year-old woman presents to your office to discuss contraception. She has recently stopped breastfeeding her 8-month-old son, and wants to stop her progestin-only pill (mini pill) because her cycles are irregular on it. You recommend a combination pill to help regulate her cycle. You also mention that with estrogen added, the contraceptive efficacy is also higher. In combination oral contraceptives, which of the following is the primary contraceptive effect of the estrogenic component?`,
+            options: ["Conversion of ethinyl estradiol to mestranol", "Atrophy of the endometrium", "Suppression of cervical mucus secretion", "Suppression of luteinizing hormone (LH) secretion", "Suppression of follicle-stimulating hormone (FSH) secretion"],
+            correctIndex: 4, // Suppression of FSH
+            explanation: `The Estrogen component primarily suppresses FSH secretion (preventing follicle selection/maturation). The Progestin component primarily suppresses the LH surge (preventing ovulation) and thickens cervical mucus.`
+        },
+        {
+            question: `A 45-year-old G1P1 presents for her routine annual examination. The patient is a healthy smoker who has no medical problems. Her surgical history is significant for a cesarean delivery with bilateral tubal interruption. You perform a Pap smear, which returns showing high grade squamous intraepithelial lesion (HSIL). She undergoes colposcopy, which is inadequate.
+What is the next step in management?`,
+            options: ["Repeat Pap smear in 6 months.", "HPV testing.", "Cone biopsy.", "Repeat Pap smear with co-testing in 1 year.", "Repeat the colposcopy in 4 to 6 months."],
+            correctIndex: 2, // Cone biopsy
+            explanation: `If Colposcopy is inadequate (transformation zone not fully visualized) in the setting of HSIL, a diagnostic excisional procedure (Cone Biopsy or LEEP) is required.`
+        },
+        {
+            question: `A pregnant 35-year-old patient is at highest risk for the concurrent development of which of the following malignancies?`,
+            options: ["Cervix", "Ovary", "Breast", "Vagina", "Colon"],
+            correctIndex: 0, // Cervix
+            explanation: `Cervical cancer is one of the most common malignancies diagnosed during pregnancy (approx 1 per 2000-10,000 pregnancies), largely because screening is routine at the first prenatal visit. Breast cancer is also common.`
+        },
+        {
+            question: `Stage Ia2 microinvasive cervical cancer is diagnosed based on cervical biopsy in a 34-year-old woman who is 12 weeks’ pregnant. What is the best next step in management?`,
+            options: ["Recommend pregnancy termination so her cervical cancer can be treated", "Perform a cone biopsy", "Treat her with chemotherapy during the pregnancy", "Wait until after the pregnancy to treat her cervical cancer", "Treat the cervical cancer with radiation during the pregnancy"],
+            correctIndex: 1, // Cone biopsy
+            explanation: `For Microinvasive disease (Stage IA2), a Cone Biopsy can be both diagnostic and therapeutic. It can be performed during pregnancy (preferably 2nd trimester) to rule out deeper invasion while preserving the pregnancy.`
+        },
+        {
+            question: `A 20-year-old woman presents complaining of bumps around her vaginal opening. The bumps have been there for several months and are getting bigger. Her boyfriend has the same type of bumps on his penis. On physical examination, the patient has multiple 2- to 10-mm lesions around her introitus consistent with condyloma. Her cervix has no gross lesions. A Pap smear is performed. One week later, the Pap smear returns showing atypical squamous cells of undetermined significance (ASCUS). Reflex HPV typing showed no high-risk HPV. Which of the following viral types is most likely responsible for the patient’s condyloma?`,
+            options: ["HPV type 11", "HPV type 16", "HPV type 18", "HPV type 45", "HPV type 56"],
+            correctIndex: 0, // Type 11
+            explanation: `Genital warts (Condyloma Acuminata) are primarily caused by low-risk HPV types 6 and 11 (responsible for ~90% of cases).`
+        },
+        {
+            question: `A 25-year-old woman presents to you for routine well-woman examination. She has had two normal vaginal deliveries and is healthy. She smokes one pack of cigarettes per day. She has no gynecologic complaints. Her last menstrual period was 3 weeks ago. During the pelvic examination, you notice that her left ovary is enlarged to 5 cm in diameter. Which of the following is the best recommendation to this patient?`,
+            options: ["Order CA-125 testing", "Schedule outpatient diagnostic laparoscopy", "Return to the office in 1 to 2 months to recheck the ovaries", "Schedule a CT scan of the pelvis", "Admit to the hospital for exploratory laparotomy"],
+            correctIndex: 2, // Recheck
+            explanation: `In a reproductive-age woman, a simple ovarian cyst < 8-10 cm is most likely a functional cyst. Expectant management (recheck in 1-2 cycles) is appropriate to see if it resolves.`
+        },
+        {
+            question: `At the time of annual examination, a patient expresses concern regarding possible exposure to sexually transmitted diseases. During your pelvic examination, a single, indurated, nontender ulcer is noted on the vulva. Venereal Disease Research Laboratory (VDRL) and fluorescent treponemal antibody (FTA) tests are positive. Without treatment, the next stage of this disease is clinically characterized by which of the following?`,
+            options: ["Optic nerve atrophy and generalized paresis", "Tabes dorsalis", "Gummas", "Macular rash over the hands and feet", "Aortic aneurysm"],
+            correctIndex: 3, // Rash
+            explanation: `The patient currently has Primary Syphilis (Chancre). The next stage is Secondary Syphilis, characterized by a maculopapular rash (classically involving palms and soles) and condyloma lata.`
+        },
+        {
+            question: `A 29-year-old G0 comes to your office complaining of a vaginal discharge for the past 2 weeks. The patient describes the discharge as thin in consistency and of a grayish white color. She has also noticed a slight fishy vaginal odor that seems to have started with the appearance of the discharge. She reports no vaginal or vulvar pruritus or burning. She admits to being sexually active in the past, but has not had intercourse during the past year. She has no history of sexually transmitted diseases. The only medication she takes are oral contraceptives. Last month, she took a course of amoxicillin for the treatment of sinusitis. On physical examination, the vulva appears normal. There is a discharge present at the introitus. A copious, thin, whitish discharge is in the vaginal vault. The vaginal pH is 5.5. The cervix is not inflamed and there is no cervical discharge. Wet smear of the discharge indicates the presence of clue cells. Which of the following
+is the most likely diagnosis?`,
+            options: ["Candidiasis", "Bacterial vaginosis", "Trichomoniasis", "Physiologic discharge", "Chlamydia"],
+            correctIndex: 1, // BV
+            explanation: `Amsel's Criteria for Bacterial Vaginosis (BV): 1. Thin, grey-white discharge. 2. pH > 4.5. 3. Positive Whiff test (Fishy odor with KOH). 4. Clue cells on wet mount.`
+        },
+        {
+            question: `A 20-year-old G2P0020 with an LMP 5 days ago presents to the emergency department with a chief complaint of a 24-hour history of increasing pelvic pain. This morning she experienced chills and fever, although she did not take her temperature. She reports no changes in her bladder or bowel habits. She has had nausea or vomiting, and has not been able to tolerate liquids. She reports no medical problems, and her only surgery was a laparoscopy performed last year for an ectopic pregnancy. She reports regular menses without dysmenorrhea. She is currently sexually active with a new sexual partner, and had intercourse with him just prior to her last menstrual period. She reports no history of abnormal Pap smears or sexually transmitted diseases. Urine pregnancy test is negative. Urinalysis is normal. WBC is 18,000. Temperature is 38.8°C (102°F). On physical examination, her abdomen is diffusely tender in the lower quadrants with rebound and voluntary guarding. Bowel sounds are present but diminished. Which of the following is the most likely diagnosis?`,
+            options: ["Ovarian torsion", "Endometriosis", "Pelvic inflammatory disease (PID)", "Kidney stone", "Ruptured ovarian cyst"],
+            correctIndex: 2, // PID
+            explanation: `The constellation of fever, leukocytosis, pelvic pain, new partner, and physical exam findings is classic for acute Pelvic Inflammatory Disease (PID).`
+        },
+        {
+            question: `( same previous patient ) Which of the following is the most appropriate initial antibiotic treatment regimen for this patient?`,
+            options: ["Doxycycline 100 mg PO twice daily for 14 days", "Clindamycin 450 mg IV every 8 hours plus gentamicin 1 mg/kg load followed by 1 mg/kg every 12 hours", "Cefoxitin 2 g IV every 6 hours with doxycycline 100 mg IV twice daily", "Ceftriaxone 250 mg IM plus doxycycline 100 mg PO twice daily for 14 days", "Ofloxacin 400 mg PO twice daily for 14 days plus Flagyl 500 mg PO twice daily for 14 days"],
+            correctIndex: 2, // Cefoxitin + Doxy (IV)
+            explanation: `Since the patient has high fever, leukocytosis, and rebound tenderness (signs of severe PID/possible tubo-ovarian abscess), inpatient IV therapy is indicated. Cefoxitin (or Cefotetan) + Doxycycline is a standard IV regimen.`
+        },
+        {
+            question: `A 57-year-old menopausal patient presents to your office for evaluation of postmenopausal bleeding. She is morbidly obese and has chronic hypertension and adult onset diabetes. An office endometrial biopsy shows complex endometrial hyperplasia with atypia, and a pelvic ultrasound demonstrates multiple, large uterine fibroids. Which of the following is the best next step in management for this patient?`,
+            options: ["Myomectomy", "Total abdominal hysterectomy", "Hysteroscopy with dilation and curettage", "Uterine artery embolization", "Oral progesterone"],
+            correctIndex: 1, // TAH
+            explanation: `Complex hyperplasia with atypia has a high risk of progressing to (or co-existing with) endometrial cancer (~30% risk). In a postmenopausal woman, the definitive treatment is Hysterectomy.`
+        },
+        {
+            question: `A 21-year-old G0 presents to your office because her menses is 2 weeks late. She states that she is taking her birth control pills correctly; she may have missed a day at the beginning of the pack, but took it as soon as she remembered. She has no medical problems, but 3 weeks ago she had a “viral stomach flu,” and missed 2 days of work due to nausea, vomiting, and diarrhea. Her cycles are usually regular, even without oral contraceptive pills. She has been on the pill for 5 years, and recently developed some midcycle bleeding, which usually lasts about 2 days. She has been sexually active with the same partner for the past 3 months, and has a history of chlamydia 3 years ago. She has had a total of 10 sexual partners. A urine pregnancy test is positive. Which of the following is the major cause of unplanned pregnancies in women using oral contraceptives?`,
+            options: ["Breakthrough ovulation at midcycle", "High frequency of intercourse", "Incorrect use of oral contraceptives", "Gastrointestinal malabsorption", "Development of antibodies"],
+            correctIndex: 2, // Incorrect use
+            explanation: `While malabsorption (vomiting/diarrhea) can contribute, "User Failure" (Incorrect use, missing pills) is statistically the most common cause of pregnancy while on OCPs.`
+        }
+    ];
+
+    // Combine Batches 1, 2, and 3
+    const currentQuestions = batch1Data.concat(batch2Data, batch3Data);
+
+    // --- FILLER: PLACEHOLDERS FOR QUESTIONS 71-100 ---
+    let placeholders = [];
+    for(let i = 71; i <= 100; i++) {
+        placeholders.push({
+            question: `[PLACEHOLDER] Question ${i}: This slot is reserved for upcoming questions.`,
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            correctIndex: 0,
+            explanation: "Explanation pending."
+        });
+    }
+
+    // Combine to form the full 100 questions array
+    const questions = currentQuestions.concat(placeholders);
+
+    /**
+     *  APPLICATION STATE
+     */
+    let currentQuestionIndex = 0; // Starts at 0 (Question 1)
+    let userAnswers = new Array(questions.length).fill(null); 
+    let timeRemaining = 180 * 60; // 180 minutes in seconds
+    let timerInterval;
+    let isExamFinished = false;
+
+    /**
+     *  INITIALIZATION
+     */
+    window.onload = function() {
+        try {
+            renderPalette();
+            loadQuestion(0);
+            startTimer();
+            updateProgress();
+        } catch (e) {
+            console.error("Initialization Error:", e);
+            document.getElementById('q-text').textContent = "Error loading questions. Please check the data format.";
+        }
+    };
+
+    /**
+     *  CORE FUNCTIONS
+     */
+
+    function loadQuestion(index) {
+        currentQuestionIndex = index;
+        const qData = questions[index];
+
+        // Update Header Info
+        document.getElementById('q-number').textContent = `Question ${index + 1} of ${questions.length}`;
+        const statusEl = document.getElementById('q-status');
+        if (userAnswers[index] !== null) {
+            statusEl.textContent = "Answered";
+            statusEl.style.color = "var(--answered)";
+        } else {
+            statusEl.textContent = "Not Answered";
+            statusEl.style.color = "#999";
+        }
+
+        // Render Text
+        document.getElementById('q-text').textContent = qData.question;
+
+        // Render Options (Dynamic Loop)
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = ''; // Clear previous
+
+        qData.options.forEach((optText, optIndex) => {
+            const el = document.createElement('div');
+            el.className = 'option-item';
+            if (userAnswers[index] === optIndex) {
+                el.classList.add('selected');
+            }
+            
+            // Allow click only if exam not finished (though logic separates views)
+            if(!isExamFinished) {
+                el.onclick = () => selectOption(index, optIndex);
+            }
+
+            el.innerHTML = `
+                <div class="option-marker"></div>
+                <div class="option-text">${optText}</div>
+            `;
+            optionsContainer.appendChild(el);
+        });
+
+        updatePaletteActiveState();
+        updateNavButtons();
+    }
+
+    function selectOption(qIndex, optIndex) {
+        userAnswers[qIndex] = optIndex;
+        
+        // Re-render current options to show selection
+        const opts = document.querySelectorAll('.option-item');
+        opts.forEach((el, i) => {
+            if (i === optIndex) el.classList.add('selected');
+            else el.classList.remove('selected');
+        });
+
+        // Update Status Text
+        const statusEl = document.getElementById('q-status');
+        statusEl.textContent = "Answered";
+        statusEl.style.color = "var(--answered)";
+
+        // Update Palette Color
+        const paletteBtn = document.getElementById(`p-btn-${qIndex}`);
+        paletteBtn.classList.add('answered');
+
+        updateProgress();
+    }
+
+    function changeQuestion(delta) {
+        const newIndex = currentQuestionIndex + delta;
+        if (newIndex >= 0 && newIndex < questions.length) {
+            loadQuestion(newIndex);
+        }
+    }
+
+    function jumpToQuestion(index) {
+        loadQuestion(index);
+    }
+
+    function renderPalette() {
+        const container = document.getElementById('palette-container');
+        container.innerHTML = '';
+        
+        questions.forEach((_, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'p-btn';
+            btn.id = `p-btn-${i}`;
+            btn.textContent = i + 1;
+            btn.onclick = () => jumpToQuestion(i);
+            container.appendChild(btn);
+        });
+    }
+
+    function updatePaletteActiveState() {
+        document.querySelectorAll('.p-btn').forEach((btn, i) => {
+            if (i === currentQuestionIndex) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    function updateNavButtons() {
+        document.getElementById('btn-prev').disabled = currentQuestionIndex === 0;
+        document.getElementById('btn-next').disabled = currentQuestionIndex === questions.length - 1;
+        
+        // Visual disable style
+        document.getElementById('btn-prev').style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+        document.getElementById('btn-next').style.opacity = currentQuestionIndex === questions.length - 1 ? '0.5' : '1';
+    }
+
+    function updateProgress() {
+        const answeredCount = userAnswers.filter(a => a !== null).length;
+        document.getElementById('progress-text').textContent = `${answeredCount} / ${questions.length} Answered`;
+    }
+
+    /**
+     *  TIMER LOGIC
+     */
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            
+            const hours = Math.floor(timeRemaining / 3600);
+            const minutes = Math.floor((timeRemaining % 3600) / 60);
+            const seconds = timeRemaining % 60;
+            
+            // Format HH:MM:SS or MM:SS
+            let displayString = "";
+            if(hours > 0) {
+                 displayString = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                 displayString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            document.getElementById('timer').textContent = displayString;
+
+            // Panic color (last 5 mins)
+            if(timeRemaining < 300) { 
+                document.getElementById('timer').style.color = "#ff6b6b";
+            }
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                finishExam(true); // Force submit
+            }
+        }, 1000);
+    }
+
+    /**
+     *  SUBMISSION & RESULTS logic
+     */
+    function showSubmitModal() {
+        document.getElementById('submit-modal').style.display = 'flex';
+    }
+
+    function closeSubmitModal() {
+        document.getElementById('submit-modal').style.display = 'none';
+    }
+
+    function finishExam(forced = false) {
+        isExamFinished = true;
+        clearInterval(timerInterval);
+        closeSubmitModal();
+
+        // Calculate Score
+        let correctCount = 0;
+        userAnswers.forEach((ans, i) => {
+            if (ans === questions[i].correctIndex) {
+                correctCount++;
+            }
+        });
+
+        const percentage = Math.round((correctCount / questions.length) * 100);
+
+        // Render Results Screen
+        document.getElementById('quiz-view').style.display = 'none';
+        document.getElementById('results-screen').style.display = 'block';
+
+        // Update Score Header
+        document.getElementById('score-display').textContent = `${percentage}%`;
+        document.getElementById('score-fraction').textContent = `${correctCount} / ${questions.length}`;
+        
+        const passLabel = document.getElementById('pass-fail-label');
+        if (percentage >= 50) {
+            passLabel.textContent = "PASSED";
+            passLabel.className = "pass-label pass";
+        } else {
+            passLabel.textContent = "FAILED";
+            passLabel.className = "pass-label fail";
+        }
+
+        // Render Detailed Review
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+
+        questions.forEach((q, i) => {
+            const userAnswer = userAnswers[i];
+            const isCorrect = userAnswer === q.correctIndex;
+            const itemClass = isCorrect ? 'correct' : 'incorrect';
+            
+            // Build Options HTML
+            let optionsHTML = '';
+            q.options.forEach((opt, optIdx) => {
+                let optClass = 'opt-review';
+                
+                // Highlight logic
+                if (optIdx === q.correctIndex) {
+                    optClass += ' correct-answer'; // Always show correct answer
+                }
+                if (userAnswer === optIdx && !isCorrect) {
+                    optClass += ' user-selected-wrong'; // Show if user picked wrong
+                } 
+
+                optionsHTML += `<div class="${optClass}">${opt}</div>`;
+            });
+
+            const html = `
+                <div class="review-item ${itemClass}">
+                    <div style="font-weight:bold; color:#555; margin-bottom:10px;">Question ${i+1}</div>
+                    <div style="font-size:1.1rem; margin-bottom:1rem;">${q.question}</div>
+                    <div>${optionsHTML}</div>
+                    <div class="explanation-box">
+                        <strong>Explanation:</strong> ${q.explanation}
+                    </div>
+                </div>
+            `;
+            reviewContainer.innerHTML += html;
+        });
+    }
+
+</script>
+</body>
+</html>
