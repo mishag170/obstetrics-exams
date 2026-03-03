@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obstetrics Final Exam (100 Questions)</title>
+    <style>
+        :root {
+            /* Medical Theme Colors */
+            --primary: #005f73;      /* Deep Teal */
+            --secondary: #0a9396;    /* Soft Teal */
+            --accent: #94d2bd;       /* Light Mint */
+            --dark: #1d3557;         /* Navy */
+            --light: #f1faee;        /* Off-white */
+            --gray: #e9ecef;         /* Light Gray */
+            --text: #333333;         /* Dark Gray text */
+            
+            /* Status Colors */
+            --answered: #457b9d;     /* Blue */
+            --active: #e63946;       /* Red/Pink for current */
+            --correct: #2a9d8f;      /* Green */
+            --incorrect: #e76f51;    /* Red/Orange */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 60px;
+            z-index: 10;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer-container {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* --- Main Layout --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar (Question Palette) */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 1rem;
+        }
+
+        .p-btn {
+            aspect-ratio: 1;
+            border: 1px solid #ddd;
+            background: var(--gray);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .p-btn:hover { background: #dfe6e9; }
+        .p-btn.answered { background-color: var(--answered); color: white; border-color: var(--answered); }
+        .p-btn.active { border: 2px solid var(--dark); transform: scale(1.1); font-weight: bold; }
+        
+        /* Result States */
+        .p-btn.res-correct { background-color: var(--correct); color: white; }
+        .p-btn.res-incorrect { background-color: var(--incorrect); color: white; }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: white;
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 2rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .q-text {
+            font-size: 1.25rem;
+            color: var(--dark);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Options */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-item:hover {
+            border-color: var(--accent);
+            background-color: #fbfffe;
+        }
+
+        .option-item.selected {
+            border-color: var(--answered);
+            background-color: #f0f8ff;
+        }
+
+        .option-marker {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            margin-right: 15px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .option-item.selected .option-marker {
+            border-color: var(--answered);
+            background: var(--answered);
+            box-shadow: inset 0 0 0 3px white;
+        }
+
+        .option-text {
+            font-size: 1rem;
+        }
+
+        /* Footer Controls */
+        .footer-controls {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 2rem;
+        }
+
+        button.nav-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-prev { background: #e9ecef; color: var(--text); }
+        .btn-prev:hover { background: #dde1e3; }
+        
+        .btn-next { background: var(--primary); color: white; }
+        .btn-next:hover { background: #004e5f; }
+
+        .btn-finish { background: var(--incorrect); color: white; margin-left: auto; }
+        .btn-finish:hover { background: #c55338; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .modal h3 { color: var(--dark); margin-bottom: 1rem; }
+        .modal p { color: #666; margin-bottom: 2rem; }
+        .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+
+        /* Results Screen */
+        #results-screen {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 1.5rem auto;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .score-label { font-size: 1rem; font-weight: normal; opacity: 0.8; }
+        .pass-label { font-size: 1.5rem; font-weight: bold; padding: 5px 15px; border-radius: 4px; display: inline-block; }
+        .pass { color: var(--correct); background: #e0f2f1; }
+        .fail { color: var(--incorrect); background: #fbe9e7; }
+
+        /* Review Styles */
+        .review-item {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            border-left: 5px solid transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .review-item.correct { border-left-color: var(--correct); }
+        .review-item.incorrect { border-left-color: var(--incorrect); }
+        
+        .explanation-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #555;
+            border-left: 3px solid var(--secondary);
+        }
+        
+        .opt-review {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .opt-review.user-selected-wrong { background: #ffebee; border-color: #ffcdd2; color: #b71c1c; }
+        .opt-review.correct-answer { background: #e8f5e9; border-color: #c8e6c9; color: #1b5e20; font-weight: 600; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; }
+            .sidebar { 
+                width: 100%; 
+                height: 60px; /* Collapsed */
+                flex-direction: row; 
+                align-items: center;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+            .sidebar-header { display: none; }
+            .palette-grid {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+                gap: 10px;
+                width: 100%;
+            }
+            .p-btn {
+                min-width: 40px;
+                height: 40px;
+                flex-shrink: 0;
+            }
+            .footer-controls { padding-bottom: 50px; }
+            .content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <span>⚕️</span> OB/GYN Final Exam
+        </div>
+        <div class="timer-container" id="timer">180:00</div>
+        <div class="progress-text" id="progress-text">0 / 100 Answered</div>
+    </header>
+
+    <!-- Quiz View -->
+    <div class="main-container" id="quiz-view">
+        <!-- Sidebar Palette -->
+        <aside class="sidebar">
+            <div class="sidebar-header">Question Palette</div>
+            <div class="palette-grid" id="palette-container">
+                <!-- Javascript will generate 1-100 buttons here -->
+            </div>
+        </aside>
+
+        <!-- Main Question Area -->
+        <main class="content">
+            <div class="question-card">
+                <div class="q-header">
+                    <span id="q-number">Question 1</span>
+                    <span id="q-status">Not Answered</span>
+                </div>
+                <div class="q-text" id="q-text">
+                    Loading Question...
+                </div>
+                <div class="options-list" id="options-container">
+                    <!-- Options generated dynamically -->
+                </div>
+            </div>
+
+            <div class="footer-controls">
+                <button class="nav-btn btn-prev" id="btn-prev" onclick="changeQuestion(-1)">Previous</button>
+                <button class="nav-btn btn-next" id="btn-next" onclick="changeQuestion(1)">Next</button>
+                <div style="flex-grow:1"></div>
+                <button class="nav-btn btn-finish" onclick="showSubmitModal()">Finish Test</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Results View (Hidden Initially) -->
+    <div id="results-screen">
+        <div class="results-header">
+            <div class="score-circle">
+                <span id="score-display">0%</span>
+                <span class="score-label" id="score-fraction">0/100</span>
+            </div>
+            <div id="pass-fail-label" class="pass-label">--</div>
+            <p style="margin-top: 1rem; color: #666;">Scroll down to review detailed answers and explanations.</p>
+        </div>
+        <div id="review-container" style="max-width: 900px; margin: 0 auto;">
+            <!-- Detailed review items will be injected here -->
+        </div>
+    </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div class="modal-overlay" id="submit-modal">
+        <div class="modal">
+            <h3>Submit Exam?</h3>
+            <p>You cannot change your answers after submitting. Are you sure you are finished?</p>
+            <div class="modal-actions">
+                <button class="nav-btn btn-prev" onclick="closeSubmitModal()">Cancel</button>
+                <button class="nav-btn btn-finish" onclick="finishExam()">Yes, Submit</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    /**
+     *  -----------------------------------------------------------
+     *  DATA CONFIGURATION
+     *  Structure: 100 Questions total.
+     *  -----------------------------------------------------------
+     */
+    
+    // QUESTIONS 1-100 ---
+   const questions  = [
+         {
+    question: `A 28-year-old woman presents to the hospital in active labour at 39 weeks gestation with her first child. She has no significant medical history and has had an uncomplicated pregnancy. She is receiving oxytocin augmentation. On examination, she appears distressed. Her pulse rate is 110/min, blood pressure 130/85 mmHg, respiratory rate 22/min, Sp02 98% on room air, and temperature 37.2°C. Abdominal examination reveals a tense uterus with frequent contractions. The cardiotocograph (CTG) shows fetal deceleration lasting 4 minutes with a baseline heart rate of 80 beats per minute and reduced variability. The contraction pattern prior to bradycardia indicates uterine hyperstimulation with five contractions every 10 minutes. Which one of the following is the most appropriate next step in management?`,
+    options: ["Start magnesium sulfate infusion.", "Apply fetal scalp electrode", "Administer terbutaline", "Perform immediate caesarean section", "Continue oxytocin infusion"],
+    correctIndex: 2,
+    explanation: `The clinical picture is uterine hyperstimulation (tachysystole) caused by oxytocin, leading to fetal distress (prolonged deceleration/bradycardia). The first step in intrauterine resuscitation for hyperstimulation is to remove the inciting agent (stop oxytocin). However, "Stop oxytocin" is not an option (Option E says "Continue", which is incorrect). The next active medical intervention to relax the uterus and restore placental perfusion is the administration of a tocolytic, such as terbutaline (subcutaneous or IV). This acts rapidly to stop contractions. While a caesarean section may be necessary if the fetal heart rate does not recover, intrauterine resuscitation is the immediate next step.`
+},
+{
+    question: `A 28-year-old woman presents to the labour ward at 39 weeks gestation with regular contractions. She has a medical history of treated Hepatitis C. At 36 weeks, her viral load was undetectable and liver function tests were normal. She has had an uncomplicated pregnancy and does not take any regular medications. On examination, she appears well. Her pulse rate is 70/min, blood pressure 120/75 mmHg, respiratory rate 16/min, Sp02 98% on room air, and temperature 36.7°C. Her cervix is 4 cm dilated, fully effaced, with the fetus in occiput anterior position at -2 station. The uterus is contracting three times in 10 minutes and is soft between contractions. The abdominal cardiotocograph (CTG) shows a sudden decrease in the fetal heart rate baseline from 140 beats per minute to 80 beats per minute lasting 7 minutes. Which one of the following is the most appropriate next step?`,
+    options: ["Apply a fetal scalp electrode", "Perform fetal blood sampling for lactate", "Prepare for emergency caesarean section", "Administer tocolytics", "Continue monitoring"],
+    correctIndex: 2,
+    explanation: `A fetal heart rate drop to 80 bpm lasting 7 minutes is a prolonged deceleration approaching a baseline change (bradycardia), which constitutes an obstetric emergency. Unlike the previous scenario, there is no evidence of hyperstimulation (uterus is soft between contractions), so tocolytics are not indicated. Fetal scalp electrodes and fetal blood sampling are generally avoided or used with extreme caution in patients with blood-borne viruses like Hepatitis C to prevent vertical transmission, and they would delay necessary action in an acute bradycardia. Given the duration of the bradycardia (7 minutes), immediate delivery is required if there is no recovery. Preparing for an emergency caesarean section is the correct step.`
+},
+{
+    question: `A 28-year-old woman presents to the antenatal clinic at 36 weeks and four days gestation. This is her first pregnancy and has been uncomplicated until now. She has no significant medical history and takes only pregnancy vitamins. At her last three visits over the past two weeks, the fetus has been documented in different positions: breech, then cephalic, and transverse. Three bedside ultrasound scans over this period have confirmed these changing positions. On examination, she appears well. Her pulse rate is 78/min, blood pressure 118/72 mmHg, respiratory rate 16/min, and temperature 36.8°C. The fetus is currently palpated in a breech position. The estimated fetal weight on her 36 week ultrasound scan is appropriate for gestational age. Which one of the following is the most appropriate diagnosis?`,
+    options: ["Oblique lie", "Complete breech presentation", "Frank breech presentation", "Unstable lie", "Compound presentation"],
+    correctIndex: 3,
+    explanation: `An unstable lie is defined as a fetal presentation that changes frequently (e.g., between cephalic, breech, and transverse) beyond 36 weeks of gestation. Since this patient is 36+4 weeks and the baby has changed position three times in two weeks, "Unstable lie" is the correct diagnosis. This condition requires management because of the risk of cord prolapse if membranes rupture while the presenting part is not engaged.`
+},
+{
+    question: `A call for help is made for a 33-year-old woman in the delivery suite with acute blood loss following vaginal delivery 40 minutes ago. She has a history of type 2 diabetes mellitus. Her pregnancy was uncomplicated and she delivered a 4.1 kg baby. The placenta was delivered with active management and was reported as complete with intact membranes. She has lost 1400 mL of blood in the last 10 minutes. Her uterus is palpated above the umbilicus and deviated to the right. She takes no regular medications. On examination, her pulse rate is 110/min, blood pressure 100/60 mmHg, respiratory rate 22/min, Sp02 98% on room air, and temperature 36.5C. The midwife has established intravenous ccess and commenced crystalloid fluids. Which one of the following is the most appropriate next step in management?`,
+    options: ["Bimanual uterine massage and intravenous oxytocin", "Manual removal of placenta", "B-Lynch suture", "Genital tract examination", "Emergency hysterectomy"],
+    correctIndex: 0,
+    explanation: `This patient has a primary postpartum hemorrhage (PPH) of 1400 mL. The physical finding of a uterus that is "palpated above the umbilicus and deviated to the right" is classic for uterine atony caused or exacerbated by a full bladder. The first-line management for uterine atony is mechanical compression (bimanual uterine massage) and pharmacological agents (oxytocin). While emptying the bladder is also crucial, massaging the uterus to stimulate contraction is the immediate first step listed. The placenta is already delivered and complete, so manual removal is unnecessary. Surgical options (B-Lynch, hysterectomy) are for when medical management fails.`
+},
+{
+    question: `A 30-year-old woman presents to the Emergency Department with a two-day history of right calf pain and swelling. She is 37 weeks pregnant with her second child. Her first pregnancy was uncomplicated. She has noticed increasing breathlessness over the past month. She has no significant medical history and takes only pregnancy vitamins. On examination, she appears well. Her pulse rate is 85/min, blood pressure 118/75 mmHg, respiratory rate 16/min, Sp02 98% on room air, and temperature 36.8C. Her right calf is swollen, tender and erythematous compared to the left. Chest examination is unremarkable. Which one of the following is the most appropriate initial investigation?`,
+    options: ["CT pulmonary angiogram", "Ventilation-perfusion scan", "Chest X-ray", "Duplex ultrasound of lower limbs", "D-dimer"],
+    correctIndex: 3,
+    explanation: `The patient presents with signs and symptoms highly suggestive of a Deep Vein Thrombosis (DVT) in the leg (unilateral swelling, redness, tenderness). Compression Duplex Ultrasound of the leg is the first-line diagnostic test for suspected DVT in pregnancy. D-dimer is physiologically elevated in pregnancy and is therefore not useful/specific. CTPA or V/Q scans are used for suspected Pulmonary Embolism (PE), but given the focal leg symptoms, investigating the leg first is appropriate and avoids radiation.`
+},
+{
+    question: `A 29-year-old woman, primigravida, presents to the Emergency Department at 28 weeks gestation with a blood pressure of 162/110 mmHg on two separate occasions. She reports a mild headache but denies any other symptoms. She has no significant medical history and takes only pregnancy multivitamins and folic acid supplements. On examination, she appears well. Her pulse rate is 88/min, respiratory rate 16/min, Sp02 98% on room air, and temperature 36.7°C. Neurological, abdominal and respiratory examinations are unremarkable. Urine dipstick is positive for proteinuria. Complete blood count, liver function tests, and coagulation studies are within normal limits. Ultrasound examination and uterine artery Doppler assessment are normal. Cardiotocography shows no signs of fetal distress.\nWhich one of the following is the most appropriate treatment?`,
+    options: ["IV bolus magnesium sulfate", "Oral nifedipine", "Emergency caesarean section", "Perindopril", "Sodium nitroprusside"],
+    correctIndex: 1,
+    explanation: `This patient has severe pre-eclampsia (BP ≥ 160/110 mmHg). The immediate goal is to lower the blood pressure to stroke range levels. Rapid-acting oral nifedipine (or IV labetalol/hydralazine) is the first-line treatment for acute severe hypertension in pregnancy. Magnesium sulfate is used for seizure prophylaxis (eclampsia prevention) but is not an antihypertensive agent. ACE inhibitors (Perindopril) are contraindicated in pregnancy. Delivery (C-section) is the definitive cure but stabilization of BP is the priority first step, and at 28 weeks, expectant management might be considered after stabilization if the fetal status is reassuring.`
+},
+{
+    question: `A 28-year-old woman presents in preterm labour at 34 weeks gestation with a breech presentation. Her antenatal ultrasound at 20 weeks had suggested a uterine anomaly. During emergency caesarean section, her uterus is noted to have a heart-shaped appearance with a deep fundal cleft and two distinct horns partially fused at the isthmus. The placenta is located in the right horn. Which one of the following best describes the embryological basis of the uterine abnormality described in this patient?`,
+    options: ["Complete septation of a single uterine cavity", "Incomplete fusion of müllerian ducts", "Failed regression of mesonephric ducts", "Complete failure of müllerian duct formation", "Failed canalization of vaginal plate"],
+    correctIndex: 1,
+    explanation: `The description of a heart-shaped uterus with a deep fundal cleft and two horns partially fused is characteristic of a **bicornuate uterus**. The uterus is formed by the fusion of the two paramesonephric (Müllerian) ducts. A bicornuate uterus results from the **incomplete fusion** of these ducts at the superior level. Complete failure of formation leads to agenesis; failure of regression of the midline septum leads to a septate uterus.`
+},
+{
+    question: ` A 28-year-old woman presents to the antenatal clinic for routine follow-up at 32 weeks gestation. This is her first pregnancy. She has no significant medical history and takes no regular medications. She reports smoking 10 cigarettes per day throughout her pregnancy despite counselling. On examination, she appears well with vital signs within normal limits. The symphysis-fundal height measures 28 cm. An ultrasound scan reveals the following measurements:\n- Biparietal diameter: 79 mm (50th percentile for gestational age)\n- Head circumference: 287 mm (50th percentile)\n- Abdominal circumference: 249 mm (5th percentile)\n- Femur length: 60 mm (30th percentile)\nEstimated fetal weight is at the 12th percentile.\nA scan performed four weeks earlier showed all parameters between the 40th and 60th percentiles for gestational age, with an estimated fetal weight at the 56th percentile. Current Doppler studies of the umbilical artery show increased resistance.\nWhich one of the following is the most likely diagnosis?`,
+    options: ["Asymmetric intrauterine growth restriction", "Gestational age miscalculation", "Constitutional small for gestational age", "Normal fetal growth variation", "Symmetric intrauterine growth restriction"],
+    correctIndex: 0,
+    explanation: `The ultrasound shows a "head-sparing" pattern where the head measurements (BPD, HC) are normal (50th percentile), but the abdominal circumference (AC) has dropped significantly to the 5th percentile. This divergence creates an **asymmetric** growth pattern. This is classically associated with uteroplacental insufficiency (caused here by smoking), where blood flow is shunted to the vital organs (brain) at the expense of the liver/abdomen. Symmetric IUGR typically involves all parameters being small and is often due to chromosomal abnormalities or early infections.`
+},
+{
+    question: ` A 35-year-old woman who is 32 weeks pregnant presents with sudden onset of bright red vaginal bleeding. She has had three previous pregnancies, including one caesarean section. The bleeding is painless and occurred without any trauma. Her vital signs are stable.\nWhich one of the following is the most likely diagnosis?`,
+    options: ["Complete placental abruption", "Placenta accreta", "Partial placental abruption", "Placenta previa", "Vasa praevia"],
+    correctIndex: 3,
+    explanation: `The hallmark presentation of **Placenta Previa** is sudden, **painless** bright red vaginal bleeding in the third trimester. A history of prior caesarean section is a significant risk factor for placenta previa. Placental abruption typically presents with painful bleeding and uterine tenderness. Vasa previa is rare and typically presents with bleeding upon rupture of membranes accompanied by immediate fetal distress.`
+},
+{
+    question: ` A 38-year-old woman presents to the birthing suite with a six-hour history of vaginal fluid loss at 39 weeks gestation. She has no significant medical history and takes no regular medications. This is her first pregnancy, which has been uncomplicated. Her antenatal records show a positive urine culture for Streptococcus agalactiae (Group B Streptococcus) at the booking visit. She has been counselled earlier in pregnancy that she requires intravenous antibiotics in labour as the positive urine culture indicates heavy colonisation. On examination, she appears well. Her pulse rate is 78/min, blood pressure 118/72 mmHg, respiratory rate 16/min, Sp02 99% on room air, and temperature 36.7°C. The fetal heart rate is 140/min. Sterile speculum examination confirms rupture of membranes with clear liquor. She expresses a preference for vaginal delivery but is hesitant about induction of labour.\nWhich one of the following is the most appropriate management plan?`,
+    options: ["Administer antibiotics and await spontaneous labour", "Administer antibiotics and recommend immediate induction of labour", "Expectant management with daily fetal monitoring", "Expectant management for 24 hours then reassess", "Recommend immediate caesarean section"],
+    correctIndex: 1,
+    explanation: `This patient has term PROM (Pre-labour Rupture of Membranes) and is GBS positive (indicated by bacteriuria during pregnancy). Women with GBS colonization who experience PROM at term are at higher risk of ascending infection and neonatal GBS sepsis. Guidelines (e.g., RCOG/NICE) recommend that for women with GBS colonization and PROM at term, immediate induction of labour and intrapartum antibiotic prophylaxis is indicated to minimize the duration of membrane rupture and the risk of infection. Expectant management is generally not recommended in GBS-positive women.`
+},
+{
+    question: `A 33-year-old primigravida woman, at 9 weeks gestation, presents to the hospital three hours after the onset of vaginal bleeding and abdominal pain. She reports bleeding several large clots associated with cramping lower abdominal pain. Her pain was 7/10 in intensity but now as reduced to 3/10, and she has no current active bleeding. On examination, she appears worried. Her vital signs are as follows:\n. Temperature 37.1C\n. Heart rate 100/min\n. Blood pressure 110/80 mmHg\n. Respiratory rate 16/min\n. Oxygen saturation at 98% on room air\n\nPelvic examination revealed traces of blood and clots surrounding her vagina, on speculum the cervix is closed and there is no active vaginal bleeding. Pelvic ultrasound shows a small amount of fluid in the endometrium and an absent gestational sac with no adnexal masses or free fluid in the abdomen. There are no suggestive findings of an ectopic pregnancy.\nWhich one of the following is the most likely diagnosis?`,
+    options: ["Missed miscarriage", "Complete miscarriage", "Incomplete miscarriage", "Threatened miscarriage", "Inevitable miscarriage"],
+    correctIndex: 1,
+    explanation: `The patient has a history of passing clots and pain which has now subsided. The cervix is closed on exam. Crucially, the ultrasound shows an empty uterus ("absent gestational sac") with no adnexal masses (excluding ectopic). This clinical picture indicates that the products of conception have been entirely expelled from the uterus, fitting the diagnosis of a **complete miscarriage**. A missed miscarriage would show a retained non-viable fetus; incomplete would show retained tissue; threatened would show a live fetus.`
+},
+{
+    question: `A 28-year-old woman presents to the Birth Suite with her first pregnancy at 39 weeks gestation. She reports contractions occurring every 5-8 minutes for the past six hours. She noticed clear fluid leaking from her vagina four hours ago. She has no significant medical history and has had an uncomplicated pregnancy. She takes pregnancy multivitamins only. She reports normal fetal movements. On examination, she appears comfortable between contractions. Her pulse rate is 82/min, blood pressure 118/75 mmHg, respiratory rate 16/min, Sp02 99% on room air, and temperature 36.7C. On vaginal examination, her cervix is 3 cm dilated, 50% effaced, and the vertex is at station -3. Clear amniotic fluid is visible. Cardiotocography shows reassuring features with contractions occurring two in ten minutes.\nWhich one of the following best describes this woman's stage of labour?`,
+    options: ["Prelabour", "Second stage", "Latent first stage", "Active first stage", "Transitional stage"],
+    correctIndex: 2,
+    explanation: `The first stage of labour is divided into latent and active phases. The latent phase is characterized by regular painful contractions and cervical effacement and dilation up to 4-6 cm (definitions vary slightly by guideline, but 3 cm is universally considered latent). The active phase usually begins when the cervix is dilated >4-5 cm with regular contractions. Since she is 3 cm dilated, she is in the **Latent first stage**.`
+},
+{
+    question: `A 28-year-old woman presents to the antenatal clinic for her first pregnancy visit at 12 weeks gestation. She has no significant medical history and takes only folate supplements. On examination, she appears well with vital signs within normal limits. A dating ultrasound is performed which shows a twin pregnancy. The sonographer notes a thick membrane between the fetuses and a triangular projection of placental tissue extending between the layers of the dividing membrane where it meets the placenta. Which one of the following is the most likely type of twin pregnancy?`,
+    options: ["Monochorionic diamniotic twins", "Monochorionic monoamniotic twins", "Dichorionic monoamniotic twins", "Dichorionic diamniotic twins", "Conjoined twins"],
+    correctIndex: 3,
+    explanation: `The ultrasound sign described is the **Lambda sign** (also known as the Twin Peak sign). This is a triangular projection of chorionic tissue extending up into the inter-twin membrane. The presence of the Lambda sign and a "thick membrane" at 10-14 weeks is diagnostic of a **Dichorionic Diamniotic (DCDA)** twin pregnancy. Monochorionic pregnancies exhibit the "T-sign" (thin membrane meeting the placenta at a 90-degree angle without tissue projection).`
+},
+{
+    question: `A 28-year-old woman presents to the Labour Ward in active labour at 39 weeks gestation. She has no significant medical history and takes no regular medications. She is receiving an oxytocin infusion for augmentation of labour. On examination, she appears well with vital signs within normal limits. The midwife describes palpating five to six strong contractions every 10 minutes with little resting tone between the contractions. The cardiotocograph shows a baseline fetal heart rate of 140 beats per minute with no accelerations and reduced baseline variability. The fetal heart rate suddenly drops to 80 beats per minute for two minutes. Which one of the following is the most appropriate first step in management?`,
+    options: ["Fetal scalp blood sampling", "Administration of terbutaline", "Emergency caesarean section", "Continue current management with close observation", "Cease oxytocin infusion"],
+    correctIndex: 4,
+    explanation: `The patient is experiencing uterine tachysystole (hyperstimulation) defined as >5 contractions in 10 minutes. This has led to fetal distress (bradycardia/deceleration). The hyperstimulation is likely caused by the oxytocin infusion. The most appropriate *first* step is to remove the cause by **ceasing the oxytocin infusion**. This often resolves the tachysystole and allows the fetal heart rate to recover. Tocolytics (terbutaline) are used if stopping oxytocin is insufficient.`
+},
+{
+    question: `A 21-year-old, Para 0, is being assessed in the second stage of labour. Her antenatal course was uncomplicated, with a normal oral glucose tolerance test. The first stage of labour was prolonged, with an epidural and syntocinon being utilised for augmentation of labour. She has now been pushing for 90 minutes. It is observed that with pushing the head becomes visible but then retracts back against the perineum into the vaginal canal. Help is called for and the woman is told to stop pushing. Which one of the following is the most appropriate immediate management?`,
+    options: ["Massage the uterine fundus", "Perform a pelvic examination and attempt to elevate the head", "Reposition the woman onto all fours", "Apply suprapubic pressure", "Reposition the woman onto the end of the bed and get her to flex and abduct her hips"],
+    correctIndex: 4,
+    explanation: `The retraction of the fetal head against the perineum is the "Turtle Sign," which is diagnostic of **Shoulder Dystocia**. The first-line maneuver for shoulder dystocia is the **McRoberts maneuver**: flexing the mother's hips back against her abdomen (hyperflexion) and abducting them. This flattens the sacrum and rotates the symphysis pubis, often freeing the impacted shoulder. Fundal pressure is contraindicated.`
+},
+{
+    question: ` A 32-year-old woman presents to the General Practice clinic for her first antenatal visit. She reports a positive home pregnancy test two days ago. Her last menstrual period was six weeks ago. She has no significant medical history and takes only folate supplements. She is a primary school teacher and lives with her partner. On examination, she appears well with vital signs within normal limits. She is interested in having prenatal screening and asks specifically about non-invasive prenatal testing\ (NIPT), as her friend recently had this test.\nWhich one of the following is the most important limitation of NIPT to discuss with this patient?`,
+    options: ["Need for confirmatory testing", "False positive rate", "Cannot detect structural anomalies", "Turnaround time for results", "Cost of the test"],
+    correctIndex: 0,
+    explanation: `NIPT (cell-free DNA testing) is a highly accurate **screening** test, but it is not diagnostic. The most important limitation to convey is that a "high risk" or positive result indicates a high probability of a chromosomal anomaly but is not definitive; it **must be confirmed** by an invasive diagnostic test (CVS or amniocentesis) before any irreversible decisions (like termination) are made. It does not replace diagnostic testing.`
+},
+{
+    question: ` A 27-year-old woman presents to the Emergency Department with intermittent vaginal bleeding. She is gravida 2, para 0, with one previous miscarriage at eight weeks gestation two years ago. She is currently in her second pregnancy and was due for her 12-week dating scan next week. She reports passing large clots and tissue yesterday, accompanied by severe cramping pain. The bleeding has since reduced but continues intermittently. She has no significant medical history and takes no regular medications. The couple have been trying to conceive for three years. On examination, she appears well. Her pulse rate is 82/min, blood pressure 110/70 mmHg, respiratory rate 16/min, Sp02 99% on room air, and temperature 36.7°C. Her abdomen is soft with mild tenderness in the suprapubic region. On speculum examination, the cervical os is closed with no bleeding or tissue visible. Transvaginal ultrasound reveals a thickened endometrium measuring 23 mm with heterogeneous echogenic material measuring 3 x 4 cm within the uterine cavity. No gestational sac is visualised. Which one of the following is the most likely diagnosis?`,
+    options: ["Missed miscarriage", "Threatened miscarriage", "Inevitable miscarriage", "Incomplete miscarriage", "Complete miscarriage"],
+    correctIndex: 3,
+    explanation: `The patient gives a history of passing tissue and clots. The ultrasound shows no gestational sac but does show significant "heterogeneous echogenic material" (retained products of conception) within the uterus. A complete miscarriage would show an empty uterus with a thin endometrium. A missed miscarriage contains a non-viable fetus/sac. An incomplete miscarriage involves the expulsion of some but not all products of conception. Although the cervical os is closed (it can close after the bulk of tissue is passed), the presence of retained heterogeneous tissue fits the diagnosis of **Incomplete miscarriage** best.`
+},
+{
+    question: ` A 28-year-old woman presents to the Gynaecology clinic for follow-up after a suction curettage two weeks ago. Histopathology has confirmed a partial molar pregnancy. She has no significant medical history and takes no regular medications. She is planning to try for another pregnancy soon. On examination, she appears well with vital signs within normal limits. Her abdomen is soft and non-tender. There is no abnormal vaginal bleeding.\nWhich one of the following is the most appropriate management plan?`,
+    options: ["Proceed with immediate conception attempts", "Attempt conception after one normal BHCG result", "Continue BHCG monitoring until negative for three consecutive weeks", "Wait twelve months before attempting conception", "Recommend permanent contraception"],
+    correctIndex: 2,
+    explanation: `Following a molar pregnancy, hCG monitoring is essential to detect Gestational Trophoblastic Neoplasia (GTN). For a **partial** molar pregnancy, the risk of GTN is lower than for a complete mole. Current guidelines (e.g., RCOG) typically recommend monitoring hCG until it has returned to normal. Often, once normal, a confirmatory period is required. Specifically, monitoring weekly until normal for 3 consecutive weeks is a standard initial phase of the surveillance protocol before moving to less frequent monitoring or discharge (depending on how quickly it normalized). Conception is contraindicated until surveillance is complete.`
+},
+{
+    question: ` A 28-year-old woman presents to her rheumatologist for routine review. She has a medical history of systemic lupus erythematosus (SLE) and takes hydroxychloroquine and mycophenolate 1000 mg twice daily for maintenance immunosuppression. She does not take any other regular medications. Her SLE has been well-controlled on this regimen for the past three years. She and her partner have decided they would like to try for a baby in the coming months. On examination, she appears well with vital signs within normal limits. There are no examination signs of active SLE. Which one of the following is the most appropriate next step in management?`,
+    options: ["Continue hydroxychloroquine and reduce mycophenolate to 500 mg twice daily", "Discontinue hydroxychloroquine and reduce mycophenolate to 500 mg twice daily", "Continue hydroxychloroquine and switch mycophenolate to azathioprine", "Discontinue hydroxychloroquine and switch mycophenolate to azathioprine", "Advise to delay conception plans for a further two years"],
+    correctIndex: 2,
+    explanation: `**Mycophenolate is teratogenic** and associated with spontaneous abortions and congenital malformations; it must be discontinued before conception. **Hydroxychloroquine is safe** in pregnancy and is recommended to continue as it reduces the risk of lupus flares. **Azathioprine** is a safe alternative immunosuppressant in pregnancy. Therefore, the correct management is to continue hydroxychloroquine and switch mycophenolate to azathioprine.`
+},
+{
+    question: ` A 27-year-old woman who is ten weeks pregnant presents to the Emergency Department with worsening shortness of breath over the last 24 hours. She has a history of severe asthma and has been using her salbutamol inhaler more frequently over the past week without improvement. She reports wheezing and chest tightness. She has no fever or productive cough. Her last severe exacerbation was six months ago, requiring a short course of oral prednisolone. On examination, she appears distressed. Her pulse rate is 110/min, blood pressure 130/80 mmHg, respiratory rate 28/min, oxygen saturation 92% on room air, and temperature 36.8C. On auscultation, there is widespread wheeze throughout both lung fields. Her peak expiratory flow rate is 55% of her personal best. The team have initiated oxygen therapy.\nWhich one of the following is the most appropriate next step in management?`,
+    options: ["Withhold corticosteroids due to pregnancy risks", "Administer nebulised salbutamol only", "Administer oral prednisolone and nebulised salbutamol", "Recommend termination of pregnancy", "Administer intravenous aminophylline"],
+    correctIndex: 2,
+    explanation: `This patient is having an acute severe asthma exacerbation (SpO2 < 92%, PEF < 50-75% range, tachycardia, tachypnea). The management of acute asthma in pregnancy is essentially the same as in non-pregnant patients because poorly controlled asthma poses a greater risk to the fetus (hypoxia) than the medications. **Systemic corticosteroids (oral prednisolone or IV hydrocortisone) and nebulised bronchodilators (salbutamol +/- ipratropium)** are indicated. Corticosteroids should not be withheld.`
+},
+{
+    question: ` A 25-year-old woman presents to the General Practice clinic with a three-day history of right breast pain, redness, and swelling. She is four weeks post-partum and is currently breastfeeding. The pain worsens during breastfeeding. She has been taking regular nurofen over the last two days and has continued to breastfeed from both breasts as recommended by her midwife, but she now reports reduced milk supply and flu-like symptoms. She has no previous episodes of breast pain. She has no significant medical history and takes no regular medications. On examination, she appears unwell. Her pulse rate is 100/min, blood pressure 110/60 mmHg, respiratory rate 18/min, Sp02 98% on room air, and temperature 37.8C. There is generalised redness, swelling, and tenderness affecting the right breast, with no focal masses palpable.\nWhich one of the following is the most appropriate management for this patient?`,
+    options: ["Cold packs and ibuprofen", "Cease breastfeeding from affected breast", "Express milk with breast pump only", "Flucloxacillin", "Firm massage of affected breast"],
+    correctIndex: 3,
+    explanation: `The patient has **infective mastitis** (breast pain, redness, fever, flu-like symptoms). While continuing to breastfeed/drain the breast is crucial, she is systematically unwell with fever, necessitating antibiotic therapy. **Flucloxacillin** is the first-line antibiotic for mastitis as the most common pathogen is *Staphylococcus aureus*. Cold packs and NSAIDs (Option A) are adjunctive but insufficient given the systemic signs.`
+},
+{
+    question: ` A 32-year-old woman presents to the antenatal clinic for a routine visit at 20 weeks gestation. This is her first pregnancy. She has no significant medical history and does not take any regular medications other than prenatal vitamins. On examination, she appears well with vital signs within normal limits. A morphology ultrasound reveals a low-lying placenta anteriorly with a posterior succenturiate lobe. Which one of the following is of most concern in this situation?`,
+    options: ["Velamentous cord insertion", "Placenta previa", "Vasa previa", "Placental abruption", "Placenta accreta"],
+    correctIndex: 2,
+    explanation: `A succenturiate lobe is an accessory lobe of the placenta. The fetal vessels connecting the main placental disc to the succenturiate lobe often run through the membranes (membranous vessels). If these vessels traverse the internal cervical os, it is called **Vasa Previa**. This is a critical condition because rupture of membranes can tear these fetal vessels, leading to rapid fetal exsanguination and death. It is the specific high-risk complication associated with succenturiate lobes, especially when the placenta is low-lying.`
+},
+{
+    question: ` A 32-year-old woman presents to the General Practice clinic at 12 weeks' gestation with her first pregnancy. The pregnancy has been progressing smoothly, and she has attended all her antenatal appointments. She is rhesus negative and has been reading online about some 'injections' that she needs because of this. She is very nervous about her blood group negatively affecting the baby and seeks advice. She has had a blood group and antibodies with her antenatal booking bloods which reveal that her blood group is Rh -ve with no antibodies. She has had non-invasive prenatal testing (NIPT) which has confirmed the fetal blood group is O positive. She lives in a rural area. On examination, she appears well with vital signs within normal limits.\nWhich one of the following is the most appropriate plan for her?`,
+    options: ["She needs an anti-D injection right now and at 28 weeks", "Reassure her that no further management is needed", "She needs anti-D injections at 28 and 34 weeks gestation", "She should get an anti-D injection regardless of her antibodies", "She should repeat NIPT at 28 weeks and 34 weeks gestation"],
+    correctIndex: 2,
+    explanation: `Since the mother is Rh-negative and the fetus is confirmed to be Rh-positive (via NIPT), she is at risk of rhesus isoimmunization. Routine antenatal anti-D prophylaxis (RAADP) is indicated to prevent sensitization from silent fetomaternal hemorrhage. The standard protocol in many regions (such as Australia and the UK) is to administer prophylactic Anti-D at **28 and 34 weeks** gestation (or a single larger dose at 28 weeks). There is no indication for Anti-D at 12 weeks unless there is a sensitizing event (bleeding/trauma), which she does not have.`
+},
+{
+    question: ` A 34-year-old woman, G1P0, in active labour at 37+2 weeks gestation is being managed on the obstetrics ward in a rural hospital. She has diet-controlled type 2 diabetes mellitus with good glucose control antenatally. Her BMI is 32 kg/m2. She has made good progress and her cervix is 8 cm dilated on vaginal examination 30 minutes ago. Her pulse rate is 78/min, blood pressure 149/92 mmHg, respiratory rate 12/min, Sp02 100% on room air, and temperature 36.8C. She is quite anxious about delivering the baby and cannot stop shaking her legs. She has no abdominal pain, headaches, trouble urinating, or shortness of breath but does have 3+ lower limb reflexes with three beats of clonus. Blood tests from this morning show platelets 230 x 10^9/L (150-400), ALT 70 U/L (<55), AST 55 U/L (<45) and GGT 70 U/L (<60). The urinary protein:creatinine ratio is elevated at 37 mg/mmol (<30). Which one of the following is the most appropriate immediate next step in management?`,
+    options: ["Transfer to tertiary centre immediately", "Start intravenous magnesium sulphate infusion", "Strict fluid balance chart and fluid restriction", "Start repeated intravenous labetalol boluses", "Attempt a ventouse delivery"],
+    correctIndex: 1,
+    explanation: `This patient has pre-eclampsia (Hypertension + Proteinuria + elevated liver enzymes). While her BP is not in the severe range (>160/110), she exhibits signs of **severe neurological irritability** (3+ reflexes and **clonus**), which suggests imminent eclampsia (seizures). The most appropriate immediate step to prevent seizures is the administration of **Magnesium Sulphate**. Transfer may be needed later, but stabilizing the patient against seizures is the priority. Delivery is the cure, but she is 8cm dilated; preventing a seizure during the remainder of labor is critical.`
+},
+{
+    question: ` A 24-year-old woman presents to the Emergency Department with lower abdominal pain and vaginal spotting. She is nine weeks pregnant with her first pregnancy. Her menstrual cycles are regular at 28 days. She has no significant medical history and takes no regular medications. On examination, she appears well. Her pulse rate is 88/min, blood pressure 110/70 mmHg, respiratory rate 16/min, Sp02 99% on room air, and temperature 36.8C. Her abdomen is soft and non-tender, with no signs of peritonism. Speculum examination reveals a closed cervix with a small amount of old blood. Investigations reveal a serum beta-human chorionic gonadotropin of 6,000 IU/L. Transvaginal ultrasound shows an intrauterine gestational sac 18mm with crown-rump length of 5 mm and no detectable fetal heartbeat. Which one of the following is the most appropriate management?`,
+    options: ["Suction D&C", "Misoprostol", "Methotrexate", "Repeat ultrasound in 7 days", "Repeat ultrasound in 48 hours"],
+    correctIndex: 3,
+    explanation: `The ultrasound shows an intrauterine pregnancy with a Crown-Rump Length (CRL) of 5mm and no heartbeat. According to most diagnostic criteria (e.g., NICE, ASUM, RCOG), a CRL < 7mm without a heartbeat is classified as a "pregnancy of uncertain viability." It cannot be definitively diagnosed as a miscarriage until a repeat scan is performed (usually in minimum 7 days) to see if the heart starts beating or the fetus grows. Therefore, invasive management (D&C/Misoprostol) is incorrect at this stage. Methotrexate is for ectopic pregnancy.`
+},
+{
+    question: ` A 28-year-old woman presents to the Emergency Department with a two week history of severe vomiting. She is eight weeks pregnant and for the last two weeks has been vomiting 10 times a day and dry heaving regularly. She is vomiting whatever she has eaten or drunk and has not noticed any blood in her vomit. She has no fever, abdominal pain, and has no sick contacts. Her clothes now feel too big and she suspects she has lost weight in the last two weeks. She is concerned that all the vomiting is harming her baby. On examination, her pulse rate is 110/min and blood pressure 124/80mmHg. Her eyes appear sunken. Blood tests reveal mild hyponatraemia and hypokalaemia. An obstetric ultrasound confirms a live intrauterine pregnancy.\n\nWhich one of the following is the most appropriate management at this stage?`,
+    options: ["Arrange for admission to receive IV fluids and monitoring", "Give antiemetic and trial of food in Emergency", "Send home with antiemetic medication and see GP with 48 hours", "Send home with antiemetic medication and see GP with 7 days", "Send home with antiemetic medication"],
+    correctIndex: 0,
+    explanation: `This patient has Hyperemesis Gravidarum with signs of dehydration (sunken eyes, tachycardia) and electrolyte disturbance (hyponatraemia, hypokalaemia). She is unable to tolerate oral intake. Outpatient management is inappropriate because she requires intravenous fluid rehydration and correction of electrolytes, along with IV antiemetics. Therefore, admission is the correct step.`
+},
+{
+    question: ` A 32-year-old woman presents to the antenatal clinic at eight weeks' gestation with her first pregnancy. She has a confirmed viable intrauterine pregnancy on dating ultrasound scan. She has a history of antiphospholipid syndrome diagnosed two years ago following three early pregnancy losses and a deep vein thrombosis. She takes no regular medications, having ceased warfarin when planning this pregnancy. She works as an accountant and lives with her partner. On examination, she appears well with vital signs within normal limits. Her body mass index is 24 kg/m2. The remainder of her examination is unremarkable.\nWhich one of the following is the most appropriate management plan?`,
+    options: ["Resume warfarin", "Aspirin alone", "Low molecular weight heparin alone", "Aspirin plus low molecular weight heparin", "Resume warfarin plus aspirin"],
+    correctIndex: 3,
+    explanation: `Women with Antiphospholipid Syndrome (APS) and a history of thrombosis (DVT) are at very high risk for recurrent thrombosis and adverse pregnancy outcomes (miscarriage/preeclampsia). Guidelines universally recommend combination therapy with **Low-dose Aspirin (LDA) plus therapeutic (or high prophylactic) doses of Low Molecular Weight Heparin (LMWH)** throughout pregnancy. Warfarin is teratogenic and avoided.`
+},
+{
+    question: ` A 32-year-old woman presents to the General Practice clinic for a routine prenatal visit at 28 weeks gestation. This is her first pregnancy. She has attended regular antenatal appointments, and all tests performed at her first antenatal visit were unremarkable. The pregnancy has been uncomplicated. She has no significant medical history and currently takes only multivitamins. Her family history includes a parent with hypertension. Her body mass index is 22 kg/m2. Her blood group is B positive. Which one of the following is the most appropriate combination of tests to perform at this visit?`,
+    options: ["Full blood count, iron studies and oral glucose test", "Full blood count, oral glucose tolerance test, and syphilis serology", "Oral glucose tolerance test and Group B streptococcus culture", "Syphilis serology, polymerase chain reaction for chlamydia and gonorrhoea and oral glucose test", "Full blood count and urine drug screen"],
+    correctIndex: 1,
+    explanation: `At 28 weeks gestation, routine screening typically includes a **Full Blood Count (FBC)** to check for anemia (physiological nadir of Hb) and an **Oral Glucose Tolerance Test (OGTT)** for gestational diabetes. Recent guidelines (e.g., in Australia/RANZCOG) also recommend repeating **Syphilis serology** at this time (often combined with the other bloods) due to rising congenital syphilis rates. GBS screening (Option C) is done at 35-37 weeks.`
+},
+{
+    question: ` A 28-year-old woman presents to the Emergency Department with her husband five days after giving birth to her first child. She appears agitated and is expressing bizarre beliefs about her baby being possessed by evil spirits. Her husband reports that she has not slept for the past three nights and has been talking rapidly about saving the world. She has no significant medical history and was not taking any medications during pregnancy. On examination, she appears dishevelled with vital signs within normal limits. She is hypervigilant and her speech is pressured and difficult to interrupt. She denies any thoughts of harming herself or the baby, but her husband is concerned about her erratic behaviour.\nWhich one of the following is the most appropriate next step in management?`,
+    options: ["Start lithium and allow the patient to go home with her husband", "Admit to the mother-baby unit for close observation", "Admit to the psychiatric ward without the baby", "Prescribe olanzapine and arrange outpatient follow-up", "Discharge home with increased support from community mental health team"],
+    correctIndex: 1,
+    explanation: `This presentation is classic for **Postpartum Psychosis** (rapid onset, insomnia, delusions, agitation, mania). This is a psychiatric emergency due to the high risk of harm to the mother and baby. The gold standard for management is admission to a specialized **Mother and Baby Unit (MBU)** where the mother can receive psychiatric treatment (antipsychotics/mood stabilizers) while maintaining the bond with her infant under supervision.`
+},
+{
+    question: ` A 32-year-old woman presents to the antenatal clinic for her first pregnancy booking visit at 12 weeks' gestation. She has no significant medical history and takes only pregnancy multivitamins. Her mother has type 2 diabetes. She works as an accountant. Her body mass index is 32 kg/m2. On examination, she appears well with vital signs within normal limits. Routine antenatal screening blood tests are performed. Her HbA1c is 6.8% (51 mmol/mol). Her oral glucose tolerance test results are:\n. Fasting plasma glucose: 7.2 mmol/L (<5.3 mmol/L)\n. 1-hour glucose: 13.8 mmol/L (<10.6 mmol/L)\n. 2-hour glucose: 11.2 mmol/L (<9.0 mmol/L)\nWhich one of the following is the most likely diagnosis?`,
+    options: ["Stress hyperglycaemia", "Physiological pregnancy changes", "Overt diabetes in pregnancy", "Early gestational diabetes", "Laboratory error"],
+    correctIndex: 2,
+    explanation: `Diagnostic criteria distinguish between Gestational Diabetes (GDM) and Overt Diabetes (pre-existing Type 2 DM detected in pregnancy). A **fasting plasma glucose ≥ 7.0 mmol/L** or an HbA1c ≥ 6.5% (48 mmol/mol) at the booking visit (early pregnancy) meets the WHO criteria for **Overt Diabetes in Pregnancy**. "Early GDM" is usually diagnosed with fasting glucose 5.1-6.9 mmol/L.`
+},
+{
+    question: ` A 32-year-old multiparous female at 9 weeks gestation has presented to her general practitioner to book her pregnancy. Due to her previous history of gestational diabetes, she returns the following day for an oral glucose tolerance test. She has bloods which reveal:\nFasting glucose 7.2 mmol/L\n2-hour glucose 8.9 mmol/L\nWhat is the appropriate management plan following these results?`,
+    options: ["Patient to be started on insulin", "Patient to be started on insulin plus statin", "Patient to be started on metformin", "Patient to be started on metformin plus statin", "Patient to be started on sitagliptin"],
+    correctIndex: 0,
+    explanation: `A fasting glucose of 7.2 mmol/L indicates Overt Diabetes. Guidelines (e.g., NICE) generally recommend immediate insulin treatment for women with a fasting glucose ≥ 7.0 mmol/L at diagnosis to rapidly control blood sugar and reduce teratogenic risk/complications. Statins are contraindicated in pregnancy. While Metformin is used in GDM, severe fasting hyperglycemia often warrants insulin first-line or as the "best" answer in exam contexts for overt diabetes.`
+},
+{
+    question: ` A 32-year-old woman presents to the Early Pregnancy Assessment Unit with vaginal bleeding and abdominal pain. She is 9 weeks pregnant by her last menstrual period. An ultrasound scan confirms a missed miscarriage with a gestational sac measuring 8 weeks but no fetal pole visible. She is hemodynamically stable with no signs of infection. After discussing her options, she opts for medical management of her miscarriage. She is prescribed mifepristone followed by misoprostol 48 hours later.\nWhat is the primary mechanism of action of the first drug she is given?`,
+    options: ["Inhibition of prostaglandin synthesis", "Progesterone receptor antagonism", "Oxytocin receptor stimulation", "Beta-adrenergic receptor blockade", "Serotonin reuptake inhibition"],
+    correctIndex: 1,
+    explanation: `Mifepristone is an anti-progestogen. It acts as a **progesterone receptor antagonist**. By blocking progesterone, it sensitizes the myometrium to prostaglandins and causes decidual necrosis, preparing the uterus for the expulsion of the pregnancy. Misoprostol (the second drug) is a prostaglandin analogue.`
+},
+{
+    question: ` A 30-year-old para 1+0 has presented at term in labour. On vaginal examination, the occiput can be palpated posteriorly (near the sacrum). Which of these is correct regarding your further management of these patients?`,
+    options: ["The fetal head may rotate spontaneously to an OA position", "Delivery is impossible without rotation", "Augmentation should be avoided if labour is slow", "If instrumentation is necessary, a ventouse is associated with the most successful outcomes", "Mothers will generally experience a later urge to push than if position was OA"],
+    correctIndex: 0,
+    explanation: `The Occipito-Posterior (OP) position is common in early labour. The vast majority of malpositions **rotate spontaneously** to the Occipito-Anterior (OA) position during the course of labour as the head descends and meets the pelvic floor. Delivery face-to-pubis (OP) is possible, though more difficult. Mothers often experience an *earlier* urge to push due to pressure on the rectum.`
+},
+{
+    question: ` A 33-year-old primigravida woman at 35+1 weeks of gestation presents to the emergency department with dull lower abdominal pain and a sensation of vaginal wetness. She denies experiencing any vaginal bleeding or having malodorous discharge. The clear, straw-colored, odorless fluid pooling is observed upon speculum examination.What is the most appropriate management for this patient based on the likely diagnosis?`,
+    options: ["IM dexamethasone", "IV magnesium sulfate", "IV meropenem", "Oral nifedipine", "Oral prednisolone"],
+    correctIndex: 0,
+    explanation: `The diagnosis is Preterm Prelabour Rupture of Membranes (PPROM) at 35 weeks. Management involves considering delivery versus expectant management. Guidelines typically recommend corticosteroids (e.g., **IM Dexamethasone** or Betamethasone) for fetal lung maturity if delivery is planned or anticipated, as the benefit exists up to ~35-36 weeks (or prior to elective C-section up to 39w). Magnesium sulfate is for neuroprotection <30-32 weeks. Tocolysis (Nifedipine) is generally not indicated in PPROM with contractions/pain unless transfer is needed, as it may increase infection risk.`
+},
+{
+    question: ` A 32-year-old woman, who gave birth a week ago presents to the GP for a routine appointment. She has concerns about her medications as she is taking multiple drugs for various conditions and is worried about the effect they may have on the baby as she wishes to breastfeed her baby.\nWhat medication can she continue to take?`,
+    options: ["Carbimazole", "Diazepam", "Isotretinoin", "Lamotrigine", "Sulfonylureas"],
+    correctIndex: 4,
+    explanation: `Among the options listed, **Sulfonylureas** (specifically second-generation ones like Glibenclamide/Glipizide) are generally considered compatible with breastfeeding as they have minimal transfer into breastmilk. Isotretinoin is absolutely contraindicated. Diazepam can cause sedation/accumulation in the infant. Carbimazole is used but requires caution/monitoring (PTU often preferred, though Carbimazole is often acceptable). Lamotrigine passes significantly into milk. Sulfonylureas are the safest "standard" answer here for continuation.`
+},
+{
+    question: ` A 42-year-old female has just delivered her second and final child at 41 weeks gestation. She has currently been in the third stage of labour for 64 minutes. She has so far lost 2800ml of blood. Her previous baby was delivered by elective caesarean-section. Her only past medical history is pelvic inflammatory disease. Due to her risk factors, an antenatal ultrasound was performed and confirmed the underlying diagnosis. Unfortunately, the results of this scan had not been seen by the delivery team until now.\nWhat is the most definitive treatment of the underlying problem?`,
+    options: ["Hysterectomy", "Oxytocin administration", "Ergometrine administration", "Traction on the umbilical cord", "Wait another 30 minutes"],
+    correctIndex: 0,
+    explanation: `The patient has a retained placenta (3rd stage > 30-60 mins), massive PPH (2800ml), and a history of previous C-section. The antenatal ultrasound confirmed a diagnosis that puts her at high risk. This clinical picture (previous CS + retained placenta + massive bleeding) is highly suggestive of **Placenta Accreta Spectrum** (morbidly adherent placenta). In cases of placenta accreta with life-threatening hemorrhage, **hysterectomy** is often the safest and definitive management to stop the bleeding, as manual removal will be impossible or cause further hemorrhage.`
+},
+{
+    question: ` A 32-year-old woman presents to the obstetric clinic at 30 weeks gestation. She has been diagnosed with gestational diabetes and was started on metformin two weeks previously. Despite a well controlled diet and maximum dose metformin, her blood glucose levels remain too high. What is the next most appropriate step to control blood glucose in this woman?`,
+    options: ["Add on a sulfonylurea and review in two weeks", "Stop metformin as start insulin therapy", "Add on an sodium-glucose co-transporter-2 (SGLT-2) antagonist and review in one week", "Add on insulin therapy", "Continue metformin and review in two weeks"],
+    correctIndex: 3,
+    explanation: `If blood glucose targets are not met with diet and metformin (and metformin is at the max tolerated dose), the next step is to add **insulin**. Insulin is the gold standard for GDM management when oral agents fail. Sulfonylureas (glibenclamide) are an alternative but insulin is generally preferred for better control if metformin fails. SGLT-2 inhibitors are contraindicated.`
+},
+{
+    question: ` A 36-year-old woman presents to her GP with symptoms of itching. She is currently 31 weeks pregnant and has no complications so far. She describes that, for the past few days, the palms of her hands and soles of the feet have been incredibly itchy. This sensation has since spread to the abdomen. Aside from this, she feels completely well in herself and denies nausea, vomiting or abdominal pain. On examination, she appears well and there is no evidence of jaundice, nor any rash. Observations are within normal limits. Blood tests are generally unremarkable except for a mildly elevated bilirubin.\nWhat is the most likely diagnosis?`,
+    options: ["Gestational hepatitis.", "Pruritus.", "Intrahepatic cholestasis of pregnancy", "Gestational jaundice", "acute liver injury"],
+    correctIndex: 2,
+    explanation: `The classic presentation of **Intrahepatic Cholestasis of Pregnancy (ICP)** is pruritus (itching) without a rash, typically affecting the **palms and soles** and worse at night, developing in the third trimester. Mild elevation of bilirubin or liver enzymes and elevated bile acids confirm the diagnosis. The absence of rash excludes polymorphic eruption of pregnancy.`
+},
+{
+    question: ` Given the likely diagnosis (the same previous patient), which of the following is most appropriate to discuss with her regarding definitive management?`,
+    options: ["Caesarian section at 37 weeks", "Induction of labour at 34 weeks", "Induction of labour at 37 weeks", "Reassurance and normal vaginal delivery at term", "Ursodeoxycholic acid"],
+    correctIndex: 2,
+    explanation: `Intrahepatic Cholestasis of Pregnancy is associated with an increased risk of stillbirth, particularly after 37-38 weeks. Therefore, the definitive management to prevent adverse fetal outcomes is typically **induction of labour**, commonly recommended around **37 weeks** (or earlier for severe cases). While Ursodeoxycholic acid treats the symptoms, it does not remove the fetal risk, so induction is the definitive management plan.`
+},
+{
+    question: ` A 24-year-old female who is 10 weeks in to her first pregnancy presents for review. Her blood pressure today is 126/82 mmHg. What normally happens to blood pressure during pregnancy?`,
+    options: ["Falls in first half of pregnancy before rising to pre-pregnancy levels before term", "Systolie + diastolie rises by < 10 mmHg", "Systolic + diastolic falls by < 10 mmHg", "Rise in first half of pregnancy before falling to pre-pregnancy levels before term", "Doesn't change"],
+    correctIndex: 0,
+    explanation: `Physiologically, systemic vascular resistance decreases significantly in early pregnancy due to vasodilation. This causes the blood pressure (both systolic and diastolic) to **fall during the first half of pregnancy**, reaching a nadir (lowest point) around 24 weeks, before gradually rising back to pre-pregnancy levels by term.`
+},
+{
+    question: ` A 30-year-old woman presents to the emergency department concerned as she had contact with a child earlier this morning who may have chickenpox. The child was feverish and experiencing symptoms of a sore throat and pruritic vesicles on the face. The patient is concerned as she is 24 weeks pregnant. She is unsure whether she had chickenpox in the past and does not believe she was ever vaccinated for it.\nWhich of the following is the next best step in the management of this patient?`,
+    options: ["Check maternal blood for varicella zoster antibodies", "Consult infectious diseases (ID) for further management", "Reassure her and ask her to comeback if she develops symptoms", "Start her on varicella-zoster immunoglobulins (VZIG) and aciclovir", "Start her on varicella-zoster immunoglobulins (VZIG) only"],
+    correctIndex: 0,
+    explanation: `The first step in a pregnant woman with varicella (chickenpox) exposure and uncertain immunity is to establish her immune status. Many women are immune despite not recalling the infection. Therefore, checking **maternal varicella zoster IgG antibodies** is the immediate next step. If she is IgG positive (immune), she needs no treatment. If non-immune, she should receive VZIG.`
+},
+{
+    question: ` A 25-year-old para 1+0 presents at 36 weeks with painless vaginal bleeding. She reports that she has had intermittent spotting over the last 4 weeks, but they have increased in volume and frequency. Her blood pressure is 125/80mmHg and her heart rate is 85bpm. On examination, her abdomen is soft and non-tender, and the fetal head is not engaged and high. What examination should you perform to confirm your initial working diagnosis?`,
+    options: ["LFTs and urine dipstick", "Vaginal examination", "Abdominal ultrasound", "Transvaginal ultrasound", "Cardiotocography of the fetus"],
+    correctIndex: 3,
+    explanation: `The clinical presentation (painless bleeding, high presenting part) is suggestive of Placenta Previa. A digital vaginal examination is contraindicated until the placental position is known. The gold standard for confirming placental location is **Transvaginal ultrasound** (it is safe and more accurate than abdominal ultrasound for localizing the placental edge relative to the internal os).`
+},
+{
+    question: ` A 25-year-old woman presents for a routine antenatal appointment. She is 28 weeks pregnant. Her pregnancy has, so far, been uncomplicated and she currently feels well. Her observations show:\n. Respiratory rate 16 breaths/min\n. Heart rate 72 beats/min\n. Blood pressure 128/86mmHg\n. Temp 37.3°C\n. Oxygen saturations 96% on room air\nUrinalysis shows:\nProtein +\nGlucose -\nNitrites -\nWhich is the most appropriate for this patient?`,
+    options: ["Nifedipine and fluid restriction", "Prophylactic aspirin", "Prophylactic aspirin and labetalol", "Prophylactic aspirin and nifedipine", "Routine management"],
+    correctIndex: 4,
+    explanation: `The patient has a normal blood pressure (128/86 mmHg). A trace or 1+ of protein on a dipstick can be common (contamination) or require monitoring but does not constitute pre-eclampsia in the absence of hypertension. She has no risk factors mentioned necessitating prophylaxis. Therefore, **routine management** (follow-up) is appropriate. There is no indication for antihypertensives or aspirin.`
+},
+{
+    question: ` A 30-year-old woman is 41 weeks pregnant with twins (dichorionic diamniotic). While she is in labour the midwife notices the umbilical cord is visible in the vagina. She pushes the emergency button and the woman is taken for an emergency caesarean section. Which of the following is most likely to cause umbilical cord prolapse?`,
+    options: ["Artificial amniotomy", "Cephalic presentation", "Induction of labour with vaginal prostaglandins", "Nulliparity", "Prolonged pregnancy"],
+    correctIndex: 0,
+    explanation: `Umbilical cord prolapse occurs when the cord descends in front of the presenting part. Major risk factors include malpresentation (breech/transverse), polyhydramnios, unengaged presenting part, and **Artificial Rupture of Membranes (Amniotomy)**. If the membranes are ruptured artificially while the head is high (not engaged), the rush of fluid can wash the cord down. Among the options listed, artificial amniotomy is a direct precipitating cause.`
+},
+{
+    question: ` A 28-year-old woman presents to the maternity assessment unit at 32 weeks gestation with a 12-hour history of vaginal fluid loss. She reports feeling feverish and having mild abdominal discomfort. She has no significant medical history and takes only pregnancy multivitamins. This is her first pregnancy and she has been attending regular antenatal care. On examination, she appears unwell. Her pulse rate is 110/min, blood pressure 110/70 mmHg, respiratory rate 20/min, SpO2 98% on room air, and temperature 38.2C. Abdominal examination reveals a soft abdomen with mild generalised tenderness. The uterus is not tense or tender. Fetal heart rate is 170 beats per minute with normal variability and no decelerations. Speculum examination confirms rupture of membranes with meconium-stained liquor.\nWhich one of the following is the most likely diagnosis?`,
+    options: ["Cytomegalovirus infection", "Urinary tract infection", "Listeriosis", "Parvovirus B19 infection", "Epstein-Barr virus infection"],
+    correctIndex: 2,
+    explanation: `The clinical picture is chorioamnionitis (fever, fetal tachycardia, PPROM). However, the specific combination of a "flu-like" illness (fever) + preterm rupture of membranes + **meconium-stained liquor at a preterm gestation (32 weeks)** is a classic presentation of **Listeriosis** (*Listeria monocytogenes*). Meconium is rare at 32 weeks and usually indicates fetal distress/infection in this context.`
+},
+{
+    question: ` A 32-year-old woman presents to the labour ward at 41 weeks gestation for induction of labour. She has a history of one previous caesarean section three years ago for failure to progress. Her current pregnancy has been uncomplicated. She has no other significant medical history and takes no regular medications. On examination, she appears well with vital signs within normal limits. Abdominal examination reveals a term pregnancy with cephalic presentation. Vaginal examination shows a closed cervix, 1 cm long, and the fetal head at station -2. Cardiotocography shows a reassuring fetal heart rate pattern.\nWhich one of the following is the most appropriate method for induction of labour in this patient?`,
+    options: ["Cervical ripening balloon", "Artificial rupture of membranes", "Intravaginal prostaglandin E2 gel", "Intravenous oxytocin infusion", "Oral misoprostol"],
+    correctIndex: 0,
+    explanation: `For a woman with a previous caesarean section (VBAC), prostaglandins (PGE2 gel, Misoprostol) are generally contraindicated or used with extreme caution due to the increased risk of uterine rupture. Since the cervix is unfavorable (closed), Artificial Rupture of Membranes (ARM) is not possible yet. The safest and most appropriate method for cervical ripening in a VBAC candidate is a mechanical method, such as a **cervical ripening balloon** (Foley catheter).`
+},
+{
+    question: ` A 28-year-old lady who is 9 weeks pregnant comes to see you for review of booking bloods. Her haemoglobin is 105 g/L and the mean cell volume (MCV) is 70 fL (normal range 77-95 fL).\nWhat is the most appropriate management?`,
+    options: ["No treatment needed, Hb is within normal range for pregnancy", "Blood transfusion", "Oral iron tablets", "Parenteral iron infusion", "Take a further blood sample for haematinics before deciding management"],
+    correctIndex: 2,
+    explanation: `In the first trimester, Hb < 110 g/L is defined as anemia. This patient has Hb 105 and a low MCV (70 fL), indicating microcytic anemia, most commonly due to iron deficiency. The appropriate first-line management for stable iron deficiency anemia in early pregnancy is a trial of **oral iron tablets**.`
+},
+{
+    question: ` A 32-year-old primigravida presents to the antenatal clinic for her booking appointment at 8 weeks gestation. She reports that she has been taking ramipril for the past 6 months to control her blood pressure. She has a past medical history of asthma for which she uses a salbutamol inhaler occasionally. On examination, her blood pressure is 154/92 mmHg. You advise that the ramipril should be stopped immediately and alternative antihypertensives should be started, whilst awaiting specialist review.\nWhat is the most appropriate antihypertensive medication to switch this patient onto?`,
+    options: ["Labetalol", "Lisinopril", "Losartan", "Nifedipine", "Spironolactone"],
+    correctIndex: 3,
+    explanation: `Ramipril (ACE inhibitor) is teratogenic and must be stopped. The standard first-line antihypertensives in pregnancy are Labetalol, Nifedipine, or Methyldopa. However, this patient has a history of **asthma**. Labetalol is a beta-blocker (non-selective beta/alpha antagonist) and can precipitate bronchospasm in asthmatics. Therefore, **Nifedipine** (a calcium channel blocker) is the safest and most appropriate choice among the options.`
+},
+{
+    question: ` A 19-year-old woman has a positive pregnancy test and is found to have an ectopic pregnancy after an intrauterine pregnancy is excluded. She has no pain or other symptoms at this time. Her serum beta-human chorionic gonadotropin (B-hCG) level is 877 IU/L. A transvaginal ultrasound reveals a 24mm adnexal mass but no heartbeat. There is no free fluid in the abdomen. She is given the option of expectant management but declines this.\nWhat is the first line treatment?`,
+    options: ["Methotrexate", "Urgent laparoscopic salpingectomy", "Methotrexate + urgent laparoscopic salpingectomy", "Misoprostol", "Mifepristone"],
+    correctIndex: 0,
+    explanation: `This patient is hemodynamically stable, asymptomatic, has a low hCG (<1500-5000 IU/L depending on guideline, 877 is low), and a small ectopic mass (<35mm) with no fetal heartbeat. She is an ideal candidate for medical management with **Methotrexate**. Since she declined expectant management, Methotrexate is the appropriate first-line intervention to avoid surgery.`
+},
+{
+    question: ` A 27-year-old woman who is currently 39 weeks pregnant comes to see you complaining of itching down below. She has thick white discharge. Given the likely diagnosis, which one of the following treatment options would you advise?`,
+    options: ["Clotrimazole pessary", "Oral fluconazole 150mg stat", "Oral fluconazole 150mg for 3 days,", "Metronidazole 400mg bd for 5 days", "Metronidazole 2g stat dose"],
+    correctIndex: 0,
+    explanation: `The symptoms (itch, thick white discharge) are typical of Vulvovaginal Candidiasis (Thrush). In pregnancy, **intravaginal imidazoles (like Clotrimazole pessary/cream)** are the recommended treatment. Oral azoles (Fluconazole) are generally avoided (especially high doses) due to potential teratogenic risks, although the risk is low at term, topical therapy is the standard first-line recommendation.`
+},
+{
+    question: ` A 17-year-old girl attends her local pharmacy seeking the morning-after pill at 11 am on Tuesday. She explains she had unprotected sexual intercourse at about 10 pm on the previous Saturday night. She is not currently on any birth control and does not wish for any at present. Her friend took levonorgestrel a few weeks ago, and she makes a request for the same one. Can she have levonorgestrel as a method of emergency contraception?`,
+    options: ["Yes, as it can be taken up to 72 hours later", "Yes, as it can be taken up to 120 hours later", "No, as it can only be taken up to 48 hours later. She can have ulipristal acetate, as this can be taken up to 72 hours later", "No, as it can only be taken up to 48 hours later. She can have ulipristal acetate, as this can be taken up to 120 hours later", "No, she cannot have levonorgestrel or ulipristal acetate, as these can only be taken up to 48 hours later. She can have the copper coil, as this can be taken up to 120 hours later"],
+    correctIndex: 0,
+    explanation: `The time elapsed from Saturday 10 pm to Tuesday 11 am is approximately 61 hours. Levonorgestrel (Levonelle) is licensed for use as emergency contraception up to **72 hours** (3 days) after unprotected sexual intercourse. Although its efficacy decreases with time, it is still within the licensed window. Ulipristal acetate (ellaOne) is effective up to 120 hours (5 days). Since the patient specifically requested levonorgestrel and is within the 72-hour window, the answer is "Yes".`
+},
+{
+    question: ` A 43-year-old woman presents to the GP regarding contraception. She has recently entered a new relationship and is not interested in using barrier methods. Her medical history includes hypertension which is controlled with ramipril. Her periods are generally heavy and she takes tranexamic acid. The patient is comfortable taking any form of contraception and does not have any preferences except for avoiding anything that can cause weight gain. What is the most appropriate contraceptive choice?`,
+    options: ["Combined oral contraceptive pill", "Depo Provera (medroxyprogesterone injection)", "Intrauterine device (copper device)", "Intrauterine system (Mirena)", "Progesterone-only pill"],
+    correctIndex: 3,
+    explanation: `The **Intrauterine System (Mirena)** is the most appropriate choice. It provides highly effective contraception and is the first-line treatment for heavy menstrual bleeding (menorrhagia), addressing her heavy periods. Unlike Depo Provera, the Mirena is not associated with significant weight gain. The combined oral contraceptive pill is relatively contraindicated (UKMEC 3) in women over 35 with hypertension, even if controlled. The copper IUD would likely worsen her heavy periods.`
+},
+{
+    question: ` Which of the following is considered an unacceptable risk (UK Medical Eligibility Criteria 4 (UKMEC4)) regarding prescribing the combined oral contraceptive pill (COCP)?`,
+    options: ["Personal history of migraines with no aura", "Breast feeding and 4 weeks postpartum", "Breast feeding and 7 weeks postpartum", "Family history of pulmonary embolism in a first degree relative aged <45 years old", "BMI > 35kg/m2"],
+    correctIndex: 1,
+    explanation: `According to WHO and older guidelines, breastfeeding <6 weeks postpartum was a Category 4 (unacceptable risk). While recent UKMEC (2016) updates have relaxed this to Category 2 for breastfeeding specifically, in the context of examination questions utilizing standard contraindications, the postpartum period (<6 weeks, especially with breastfeeding) is often flagged due to the theoretical risk of estrogen affecting milk supply and the elevated risk of VTE in the puerperium. In contrast, migraine *without* aura is UKMEC 2, family history of PE is UKMEC 2, and BMI >35 is UKMEC 3. (Note: A personal history of DVT or Migraine *with* aura would be UKMEC 4). Among the options provided, the postpartum status <6 weeks is the most significant historical contraindication cited.`
+},
+{
+    question: ` A 35-year-old woman comes to your clinic to discuss starting contraception. Her BMI is 31 kg/m2, having lost significant weight following gastric sleeve placement 1 year ago. She is a non-smoker and has never been pregnant. Her blood pressure is 119/78mmHg. The patient is open to long-acting reversible contraceptives though doesn't want a coil. She would also like a contraceptive that can be stopped relatively quickly should she decide to want to start a family. What contraceptive option would be most appropriate?`,
+    options: ["Combined hormonal contraceptive patch", "Combined oral contraceptive pill (COCP)", "Depo-Provera injectable contraceptive", "Nexplanon implantable contraceptive", "Progesterone-only pill (POP)"],
+    correctIndex: 3,
+    explanation: `The patient has had bariatric surgery. Oral contraceptives (COCP and POP) may have reduced effectiveness due to potential malabsorption issues, making them less ideal. The Depo-Provera injection has a delayed return to fertility (up to 12 months), which conflicts with her desire to stop quickly if she wants a family. The **Nexplanon implant** is a Long-Acting Reversible Contraceptive (LARC), is unaffected by malabsorption (bypasses the gut), is safe for her BMI, and allows for a rapid return to fertility upon removal. She specifically stated she does not want a coil, making the implant the best LARC option.`
+},
+{
+    question: ` A 52-year-old woman presents to her general practitioner (GP) to find out the result of her recent cervical smear. Her two previous smears, taken 24 and 12 months ago, were both positive for high-risk human papillomavirus (HPV), but showed no abnormal cytology. She is informed that her most recent cervical smear was also positive for high-risk HPV.\nWhat is the most appropriate step in this patient's management?`,
+    options: ["Cytological examination of the smear", "Refer for colposcopy", "Repeat cervical smear in 5 years", "Repeat cervical smear in 6 months", "Repeat cervical smear in 12 months"],
+    correctIndex: 1,
+    explanation: `Under the HPV primary screening program, if a patient tests HPV positive with normal cytology, the test is repeated in 12 months. If the second test is HPV positive (cytology normal), it is repeated again in another 12 months (24 months total). If the third test (at 24 months) is still **HPV positive** (regardless of cytology), the patient must be **referred for colposcopy**. This patient has now had 3 consecutive HPV positive results over a 24-month period.`
+},
+{
+    question: ` A 62-year-old woman presents to the General Practice clinic with a three-month history of abdominal bloating, early satiety, and increasing abdominal girth. She has lost 5 kg in weight over this period. She has no significant medical history and takes no regular medications. She reached menopause at age 51 years. Her older sister was diagnosed with breast cancer at age 45 years. On examination, she appears well. Her vital signs are within normal limits. Her abdomen is distended with shifting dullness. A fixed mass is palpable in the left lower quadrant. Pelvic examination reveals a firm, irregular adnexal mass. CT abdomen/pelvis shows a complex left ovarian mass with peritoneal deposits and moderate ascites. Which one of the following is the most appropriate tumor marker to request?`,
+    options: ["Alpha-fetoprotein", "CA-125", "CA 15-3", "CA 19-9", "Carcinoembryonic antigen"],
+    correctIndex: 1,
+    explanation: `The clinical presentation (bloating, early satiety, ascites, adnexal mass) in a postmenopausal woman is highly suspicious for **Epithelial Ovarian Cancer**. The most appropriate tumor marker for epithelial ovarian cancer is **CA-125**. AFP is for germ cell tumors (younger women), CA 19-9 is for pancreatic or mucinous ovarian tumors, and CEA is for bowel cancer.`
+},
+{
+    question: ` A 16-year-old girl presents to the Emergency Department with a 12-hour history of nausea and lower abdominal pain associated with urinary frequency. She has regular 28-day menstrual cycles, and her last period was just over four weeks ago. She does not take any regular medications. On examination, she appears unwell. Her pulse rate is 90/min, blood pressure 112/78 mmHg, respiratory rate 18/min, Sp02 98% on room air, and temperature 37.6C. She is tender in the right iliac fossa. Which one of the following is the most appropriate next investigation?`,
+    options: ["Transvaginal ultrasound", "Urinary beta-HCG", "Full blood count", "Serum beta-HCG", "Urinalysis"],
+    correctIndex: 1,
+    explanation: `In any woman of reproductive age presenting with lower abdominal pain, pregnancy must be excluded immediately, regardless of menstrual history. An ectopic pregnancy is a life-threatening differential diagnosis. A **Urinary beta-HCG** is the rapid, non-invasive first-line screening test. Once pregnancy status is known, further investigations (like ultrasound or bloods) can be prioritized.`
+},
+{
+    question: ` A 24-year-old woman presents to the General Practice clinic with a three-day history of a painless genital ulcer. She reports unprotected sexual intercourse with a new partner two weeks ago. She has no significant medical history and takes no regular medications except for the combined oral contraceptive pill. On examination, she appears well with vital signs within normal limits. There is a single, well-circumscribed, non-tender ulcer with a firm base on her right labia majora. The inguinal lymph nodes are slightly enlarged but non-tender.\nWhat is the most likely diagnosis?`,
+    options: ["Genital wart", "Hemophilus ducrea chancre", "Primary syphilis", "Genital herpes simplex infection", "Chlamydia infection"],
+    correctIndex: 2,
+    explanation: `The classic presentation of **Primary Syphilis** is a solitary, **painless**, indurated (firm base) ulcer known as a chancre, often accompanied by non-tender lymphadenopathy. Genital herpes typically presents with painful multiple vesicles/ulcers. Chancroid (*Haemophilus ducreyi*) causes painful, purulent ulcers.`
+},
+{
+    question: ` (same previous patient) Which one of the following is the most appropriate to confirm diagnosis?`,
+    options: ["Dark field microscopy", "Rapid plasma reagin test alone", "Ulcer PCR alone", "Ulcer PCR with rapid plasma reagin test", "Ulcer culture with rapid plasma reagin test"],
+    correctIndex: 3,
+    explanation: `Diagnosis of early (primary) syphilis can be challenging because serology may be negative in the initial stages (window period). The most sensitive and specific method for primary lesions is direct detection of *Treponema pallidum* DNA via **PCR** from a swab of the ulcer. It is standard practice to also perform serology (like **Rapid Plasma Reagin** or RPR/VDRL) to establish a baseline for monitoring treatment response, even if negative initially. Therefore, the combination of Ulcer PCR and RPR is the best approach.`
+},
+{
+    question: ` A 68-year-old woman presents to the gynecology clinic with a six-month history of vulval itch and discomfort. She has tried over- the-counter antifungal creams without improvement. She experienced menopause at age 51 and has never used hormone replacement therapy. She has a medical history of hypertension and osteoarthritis. Her medications include amlodipine and paracetamol. She has never smoked. On examination, she appears well with vital signs within normal limits. Vulval examination reveals a 2 cm raised, white plaque on the right labium majus with surrounding erythema. There is no lymphadenopathy in the inguinal region. Which one of the following is the most appropriate next step in management?`,
+    options: ["Referral for colposcopy", "Topical clotrimazole for two weeks", "Vulval biopsy in outpatient clinic", "Topical hydrocortisone for one week", "Oral fluconazole"],
+    correctIndex: 2,
+    explanation: `The presentation of a chronic vulval itch with a distinct "raised white plaque" (leukoplakia) in a postmenopausal woman raises the suspicion of Vulvar Intraepithelial Neoplasia (VIN) or Vulvar Cancer, in addition to Lichen Sclerosus. Antifungals have already failed. Before committing to long-term steroid treatment for Lichen Sclerosus, it is mandatory to exclude malignancy in a focal lesion. A **vulval biopsy** is the diagnostic gold standard.`
+},
+{
+    question: ` A 45-year-old multiparous woman presents with progressively heavy menstrual bleeding for the past 6 months, associated with significant pelvic pressure and increased abdominal girth. She reports no intermenstrual bleeding or post-coital bleeding. On examination, a firm, non-tender, irregular pelvic mass consistent with an enlarged uterus is palpable, extending to 16 weeks size. Her hemoglobin is 9.8 g/dL.\nWhich of the following is the most likely diagnosis?`,
+    options: ["Endometriosis", "Adenomyosis", "Uterine Leiomyoma", "Ovarian cyst"],
+    correctIndex: 2,
+    explanation: `The key features here are a **firm, irregular, enlarged uterus** (16 weeks size) and heavy menstrual bleeding accompanied by pressure symptoms. This is the classic presentation of **Uterine Leiomyomas (Fibroids)**. Adenomyosis typically presents with a boggy, tender, uniformly enlarged uterus (usually <12 weeks size). Ovarian cysts would present as an adnexal mass, separate from the uterus.`
+},
+{
+    question: ` A 28-year-old nulliparous woman presents with a 3-year history of irregular menstrual cycles (occurring every 2-4 months), increasing facial hair, and persistent acne unresponsive to topical treatments. Her BMI is 32 kg/m ². Hormonal investigations reveal elevated testosterone levels and an increased LH:FSH ratio. Ultrasound shows polycystic ovaries.\nWhat is the primary underlying endocrine abnormality responsible for her symptoms?`,
+    options: ["Hypothyroidism", "Hyperprolactinemia", "Insulin resistance", "Adrenal hyperplasia"],
+    correctIndex: 2,
+    explanation: `This patient has Polycystic Ovary Syndrome (PCOS), diagnosed by oligomenorrhea, hyperandrogenism (hirsutism/acne), and polycystic ovaries. The central pathophysiological driver in PCOS, particularly in patients with elevated BMI, is **insulin resistance**. Hyperinsulinemia stimulates theca cells to produce androgens and decreases sex hormone-binding globulin (SHBG), leading to free testosterone elevation.`
+},
+{
+    question: ` A 22-year-old sexually active woman presents with lower abdominal pain, fever (38.5°C), and purulent vaginal discharge. On speculum examination, the cervix appears inflamed, and significant cervical motion tenderness is elicited during bimanual examination. Her urine pregnancy test is negative.\nWhat is the most appropriate initial management for this patient?`,
+    options: ["Oral Metronidazole", "Intravenous Acyclovir", "Outpatient oral antibiotics for PID", "Hospitalization and broad-spectrum intravenous antibiotics"],
+    correctIndex: 3,
+    explanation: `The patient has clinical signs of Pelvic Inflammatory Disease (PID) (abdominal pain, CMT, discharge). However, she has signs of severe illness, specifically a **high fever (38.5°C)**. Criteria for hospitalization in PID include severe clinical illness (high fever, nausea/vomiting), pregnancy, or tubo-ovarian abscess. Due to the fever indicating systemic involvement, inpatient management with **IV antibiotics** is appropriate.`
+},
+{
+    question: ` A 58-year-old postmenopausal woman, gravida 2, para 2, presents with a 3-month history of painless vaginal bleeding. She completed menopause 8 years ago and has not been on hormone replacement therapy. Her BMI is 35 kg/m ². Transvaginal ultrasound shows an endometrial thickness of 12 mm.\nWhich of the following is the most appropriate next step in her management?`,
+    options: ["Reassurance and watchful waiting", "Oral progesterone therapy", "Endometrial biopsy", "Cervical cytology (Pap smear)"],
+    correctIndex: 2,
+    explanation: `Postmenopausal bleeding (PMB) is a red flag for Endometrial Cancer. An endometrial thickness > 4mm on ultrasound in a postmenopausal woman with bleeding requires tissue diagnosis. With a thickness of **12 mm**, an **endometrial biopsy** (pipelle or hysteroscopy) is mandatory to rule out hyperplasia or carcinoma.`
+},
+{
+    question: ` A 35-year-old woman presents with severe dysmenorrhea, deep dyspareunia, and chronic pelvic pain. She has been trying to conceive for 2 years without success. Pelvic examination reveals a retroverted uterus and tender nodularity in the posterior fornix. Laparoscopy is performed.\nWhich of the following findings would most likely confirm the suspected diagnosis?`,
+    options: ["Enlarged, boggy uterus", "Dilated fallopian tubes", "Blue-black lesions on the peritoneum", "Multiple uterine fibroids"],
+    correctIndex: 2,
+    explanation: `The symptoms (dysmenorrhea, deep dyspareunia, infertility, tender nodularity) are highly suggestive of **Endometriosis**. The diagnostic hallmark of endometriosis on laparoscopy is the presence of **"powder-burn" or blue-black lesions** (implants of endometrial tissue) on the peritoneal surfaces, ovaries, or pelvic ligaments.`
+},
+{
+    question: ` A 25-year-old woman presents to the emergency department with sudden onset, severe, unilateral lower abdominal pain, nausea, and vomiting. Her last menstrual period was 5 weeks ago, and a urine pregnancy test is positive. On examination, she is hemodynamically stable, but a tender adnexal mass is palpable on the affected side.\nWhat is the most critical immediate investigation to perform?`,
+    options: ["Abdominal X-ray", "CT scan of the abdomen and pelvis", "Transvaginal ultrasound", "Diagnostic laparoscopy"],
+    correctIndex: 2,
+    explanation: `The clinical picture suggests an ectopic pregnancy. The most important diagnostic imaging modality to locate the pregnancy is a **Transvaginal Ultrasound**. It can visualize the gestational sac (intrauterine vs extrauterine) and assess for free fluid. CT is contraindicated/unnecessary due to radiation, and laparoscopy is surgical management, not the initial investigation.`
+},
+{
+    question: ` A 62-year-old woman complains of a sensation of "something coming down" in her vagina, especially when coughing or standing for prolonged periods. She also reports difficulty emptying her bladder completely. On examination, a bulge is visible at the introitus, especially with straining, involving the anterior vaginal wall.\nWhat is the most likely diagnosis?`,
+    options: ["Rectocele", "Uterine prolapse", "Cystocele", "Enterocele"],
+    correctIndex: 2,
+    explanation: `Prolapse involving the **anterior vaginal wall** is typically a **Cystocele** (bladder prolapse). This correlates with her urinary symptoms (difficulty emptying the bladder). A rectocele involves the posterior wall, and uterine prolapse involves the apex/cervix descending.`
+},
+{
+    question: ` A 60-year-old postmenopausal woman, who has never smoked, presents with a 6-month history of progressively worsening vulvar itching and burning. On examination, the vulvar skin appears thin, white, and parchment-like, with some architectural distortion. There are no suspicious masses or ulcers.\nWhat is the most appropriate initial management for this condition?`,
+    options: ["Topical antifungal cream", "Oral antihistamines", "High-potency topical corticosteroids", "Vulvar biopsy"],
+    correctIndex: 2,
+    explanation: `The description of "thin, white, parchment-like" skin with architectural distortion and itching is classic for **Lichen Sclerosus**. The first-line treatment is **high-potency topical corticosteroids** (e.g., Clobetasol propionate) to reduce inflammation, relieve symptoms, and prevent further scarring/distortion. Biopsy is performed if the diagnosis is uncertain or there are suspicious lesions (masses/ulcers), but typically treatment is started on clinical grounds if classic.`
+},
+{
+    question: ` A 29-year-old woman has been trying to conceive for 1 year with her partner. Her menstrual cycles are regular, and she has no known medical conditions. Her partner's semen analysis is normal. Hysterosalpingography reveals bilateral fallopian tube occlusion.\nWhich of the following is the most appropriate next step in her fertility management?`,
+    options: ["Ovarian stimulation with Clomiphene Citrate", "Intrauterine insemination (IUI)", "In vitro fertilization (IVF)", "Laparoscopic tubal recanalization"],
+    correctIndex: 2,
+    explanation: `With **bilateral tubal occlusion**, sperm cannot reach the egg for fertilization in the tube, and the embryo cannot reach the uterus. Treatments like Clomiphene or IUI require at least one patent tube to function. While surgery (recanalization) is an option for sterilization reversal, for pathologic occlusion it has low success rates. **In Vitro Fertilization (IVF)** is the most appropriate and effective option as it completely bypasses the fallopian tubes.`
+},
+{
+    question: ` A 19-year-old woman presents with severe, cramping lower abdominal pain during her menstrual periods, starting a few hours before the onset of bleeding and lasting 2-3 days. She reports no other pelvic symptoms or abnormal bleeding. Pelvic examination is unremarkable.\nWhat is the most likely diagnosis?`,
+    options: ["Secondary dysmenorrhea", "Pelvic inflammatory disease (PID)", "Endometriosis", "Primary dysmenorrhea"],
+    correctIndex: 3,
+    explanation: `Painful menstruation beginning shortly before or at the onset of bleeding in a young woman with a normal pelvic examination and no other pathology is defined as **Primary Dysmenorrhea**. It is caused by excess prostaglandin production. Secondary dysmenorrhea implies underlying pathology (like endometriosis or fibroids) and often presents later in life or with other symptoms.`
+},
+{
+    question: ` A 48-year-old woman presents with heavy menstrual bleeding for the past 9 months, associated with significant fatigue. Her periods are irregular, ranging from 21-35 days apart. She denies intermenstrual or post-coital bleeding. Her TSH is normal, and she is not pregnant. Pelvic ultrasound is normal.\nWhat is the most likely diagnosis in this perimenopausal woman?`,
+    options: ["Endometrial hyperplasia", "Uterine fibroids", "Anovulatory dysfunctional uterine bleeding (DUB)", "Adenomyosis"],
+    correctIndex: 2,
+    explanation: `In the perimenopausal period, ovarian function becomes erratic, leading to anovulatory cycles. Without ovulation, there is no progesterone withdrawal, leading to unopposed estrogen and irregular, often heavy shedding of the endometrium. Since investigations (ultrasound, TSH) are normal, structural causes (fibroids, adenomyosis) are excluded. The diagnosis is **Anovulatory Dysfunctional Uterine Bleeding**.`
+},
+{
+    question: `A 33-year-old woman undergoes a Pap smear which returns as High-Grade Squamous Intraepithelial Lesion (HSIL). Subsequent colposcopy with directed biopsies confirms Cervical Intraepithelial Neoplasia Grade 2 (CIN 2).\nWhat is the most appropriate definitive management for CIN 2?`,
+    options: ["Repeat Pap smear in 6 months", "Cryotherapy or LEEP (Loop Electrosurgical Excision Procedure)", "Hysterectomy", "HPV vaccination"],
+    correctIndex: 1,
+    explanation: `CIN 2 and CIN 3 are considered high-grade pre-cancerous lesions requiring treatment to prevent progression to cervical cancer. The standard definitive management is excision of the transformation zone, commonly via **LEEP (Loop Electrosurgical Excision Procedure)** or LLETZ. Cryotherapy (ablation) is also an option but excision provides a specimen for histology. Hysterectomy is too radical. Observation is sometimes considered for young women (<25) with CIN 2, but at 33, treatment is standard.`
+},
+{
+    question: ` A 26-year-old woman presents with a 2-week history of a painful, vesicular rash on her vulva, associated with dysuria and inguinal lymphadenopathy. She reports a new sexual partner recently. Examination reveals multiple small, fluid-filled blisters and shallow ulcers on the labia.\nWhat is the most likely diagnosis?`,
+    options: ["Syphilis", "Genital warts (HPV)", "Genital herpes simplex virus (HSV) infection", "Chancroid"],
+    correctIndex: 2,
+    explanation: `The presentation of **painful**, multiple vesicles (blisters) that rupture to form shallow ulcers, often accompanied by systemic symptoms (fever) and painful lymphadenopathy, is pathognomonic for **Genital Herpes Simplex Virus (HSV)** infection. Syphilis causes painless ulcers. HPV causes fleshy warts. Chancroid causes painful ulcers but is rare and ulcers are typically larger and purulent.`
+},
+{
+    question: `A 38-year-old woman presents with a breast lump. She has been on combined oral contraceptive pills (COCs) for 10 years. Her family history is significant for breast cancer in her mother at age 55.\nWhich of the following is an absolute contraindication to combined oral contraceptive use?`,
+    options: ["History of migraine without aura", "BMI of 30 kg/m ²", "History of deep vein thrombosis (DVT)", "Family history of breast cancer"],
+    correctIndex: 2,
+    explanation: `A personal **history of Deep Vein Thrombosis (DVT)** is a UKMEC 4 (Absolute Contraindication) for Combined Oral Contraceptives due to the estrogen component's pro-thrombotic effect. Migraine without aura and BMI 30 are usually UKMEC 2 (benefits outweigh risks). A family history of breast cancer (unless a known gene carrier like BRCA) is usually UKMEC 1.`
+},
+{
+    question: ` A 25-year-old woman presents with a three-day history of foul-smelling vaginal discharge. Her last menstrual period was seven days ago. A speculum examination shows a creamy-grey discharge and a swab is taken for culture. The swab is smeared onto a slide for microscopy, which shows clue cells. The vaginal pH is 5.0 (range 4.0-4.5). A fishy odor is present on addition of 10% potassium hydroxide to the vaginal fluid. Which one of the following would be the most appropriate treatment?`,
+    options: ["Fluconazole", "Azithromycin", "Doxycycline", "Metronidazole", "Acetic acid vaginal gel"],
+    correctIndex: 3,
+    explanation: `The patient fulfills Amsel's criteria for **Bacterial Vaginosis (BV)**: 1) Homogenous grey-white discharge, 2) pH > 4.5, 3) Positive Whiff test (fishy odor with KOH), 4) Clue cells on microscopy. The standard treatment for symptomatic Bacterial Vaginosis is **Metronidazole** (oral or vaginal gel).`
+},
+{
+    question: `A 50-year-old perimenopausal woman presents with hot flashes, night sweats, and vaginal dryness affecting her quality of life. She has an intact uterus and no contraindications to hormone therapy.\nWhat is the most appropriate hormone replacement therapy regimen for her symptoms?`,
+    options: ["Estrogen-only pills", "Progestin-only pills", "Combined estrogen and progestin therapy", "Testosterone therapy"],
+    correctIndex: 2,
+    explanation: `In a woman with an **intact uterus**, estrogen therapy must always be combined with a **progestogen** (combined HRT) to protect the endometrium. Unopposed estrogen increases the risk of endometrial hyperplasia and cancer. Estrogen-only HRT is reserved for women who have had a hysterectomy.`
+},
+{
+    question: ` A 20-year-old woman presents with primary amenorrhea. She has normal breast development but absent pubic and axillary hair. On examination, she has a blind-ending vagina, and no cervix or uterus are palpable. Karyotype reveals 46,XY.\nWhat is the most likely diagnosis?`,
+    options: ["Turner Syndrome", "Mullerian agenesis (Rokitansky-Kuster-Hauser syndrome)", "Androgen Insensitivity Syndrome (AIS)", "Imperforate hymen"],
+    correctIndex: 2,
+    explanation: `This phenotype describes **Complete Androgen Insensitivity Syndrome (AIS)**. The genotype is 46,XY (male), so testes produce testosterone and Anti-Mullerian Hormone (AMH). AMH causes regression of the uterus (no uterus/cervix). However, androgen receptors are defective, so external genitalia develop as female, and testosterone is aromatized to estrogen leading to breast development. The lack of androgen response results in **absent/sparse pubic and axillary hair**. In contrast, Mullerian Agenesis has a 46,XX karyotype and normal pubic hair.`
+},
+{
+    question: `A 70-year-old woman presents to the General Practice clinic with a six-week history of increasing urinary leakage. The leakage occurs with coughing and straining. She denies dysuria or urinary frequency. She has a medical history of chronic obstructive pulmonary disease. Her regular medications include salbutamol and inhaled corticosteroids. She maintains a well-balanced, high-fibre diet with regular bowel movements. On examination, she appears well with vital signs within normal limits. Her abdomen is soft and non-tender with no masses palpable. Vaginal examination with a chaperone reveals no visible pelvic organ prolapse. Urinalysis is negative for leukocytes and nitrites. She has previously tried pelvic floor exercises with a physiotherapist for six months without improvement.\nWhich one of the following is the most appropriate management?`,
+    options: ["Oxybutynin", "Solifenacin", "Colposuspension", "Duloxetine", "Botulinum injections"],
+    correctIndex: 3,
+    explanation: `The patient has **Stress Urinary Incontinence** (leakage with cough/strain, no urge symptoms) and has failed first-line conservative management (pelvic floor exercises). Oxybutynin, Solifenacin, and Botox are treatments for Urge Incontinence/OAB and are not effective for stress incontinence. While surgery (like colposuspension or slings) is the standard definitive treatment, **Duloxetine** is the recommended pharmacological option for women with stress incontinence who prefer not to have surgery or are not suitable candidates. Given her COPD (chronic cough) and age, conservative medical management is a common next step in a general practice setting.`
+},
+{
+    question: `A 27-year-old woman presents with heavy and prolonged menstrual bleeding (menorrhagia) and abdominal discomfort. Ultrasound reveals multiple uterine fibroids, with the largest measuring 7 cm. She desires future fertility.\nWhich of the following surgical options is most appropriate for her?`,
+    options: ["Hysterectomy", "Uterine artery embolization (UAE)", "Endometrial ablation", "Myomectomy"],
+    correctIndex: 3,
+    explanation: `For a woman with symptomatic fibroids who explicitly **desires future fertility**, the surgical procedure of choice is **Myomectomy**. This involves removing the fibroids while preserving the uterus. Hysterectomy and Endometrial Ablation result in sterility. Uterine Artery Embolization (UAE) is generally not recommended for women seeking fertility due to potential risks to ovarian reserve and placentation.`
+},
+{
+    question: ` A 65-year-old woman complains of urinary incontinence primarily when she laughs, coughs, or sneezes. She reports no urge to void or difficulty reaching the toilet. Her medical history includes three vaginal deliveries.\nWhat is the most likely type of urinary incontinence?`,
+    options: ["Urge incontinence", "Overflow incontinence", "Stress incontinence", "Mixed incontinence"],
+    correctIndex: 2,
+    explanation: `Involuntary leakage of urine during increases in intra-abdominal pressure (laughing, coughing, sneezing) without a preceding urge is the definition of **Stress Urinary Incontinence**. It is commonly caused by urethral hypermobility or intrinsic sphincter deficiency, often associated with previous vaginal deliveries.`
+},
+{
+    question: ` A 42-year-old woman presents with intermenstrual spotting and post-coital bleeding. Her last Pap smear was 5 years ago. On speculum examination, a friable, reddish lesion is noted on the cervix that bleeds easily on contact.\nWhat is the most appropriate initial diagnostic step?`,
+    options: ["Endometrial biopsy", "Immediate cone biopsy", "Punch biopsy of the cervical lesion", "HPV DNA testing"],
+    correctIndex: 2,
+    explanation: `A visible, friable cervical lesion is highly suspicious for cervical cancer. In the presence of a gross lesion, Pap smears (cytology) have a high false-negative rate and are inappropriate. The correct step is to obtain a tissue diagnosis directly via a **cervical punch biopsy** to confirm malignancy.`
+},
+{
+    question: ` A 24-year-old woman presents with a 6-month history of secondary amenorrhea. Her pregnancy test is negative. She has no hot flashes or vaginal dryness. Prolactin and TSH levels are normal. On physical examination, there are no signs of hirsutism or acne. Her BMI is 18 kg/m ². \nWhat is the most likely cause of her amenorrhea?`,
+    options: ["Polycystic Ovary Syndrome (PCOS)", "Premature Ovarian Insufficiency", "Hypothalamic amenorrhea", "Asherman's Syndrome"],
+    correctIndex: 2,
+    explanation: `The patient has low BMI (18 kg/m2), no signs of hyperandrogenism (ruling out PCOS), and no signs of estrogen deficiency like hot flashes (making POI less likely, although FSH would confirm). In the context of low BMI and stress/exercise (implied by the phenotype), **Functional Hypothalamic Amenorrhea** is the most likely cause. This involves suppression of the GnRH pulsatility.`
+},
+{
+    question: ` A 21-year-old woman presents with a 2-day history of sudden, severe, sharp, unilateral lower abdominal pain. She is otherwise healthy. Her last menstrual period was 2 weeks ago. Urine pregnancy test is negative. On examination, there is severe tenderness in the right adnexa. Transvaginal ultrasound shows a 5 cm right ovarian cyst with internal echoes and free fluid in the pouch of Douglas. The doppler flow to the ovary is significantly reduced.\nWhat is the most likely diagnosis?`,
+    options: ["Ruptured appendicitis", "Renal colic", "Ovarian torsion", "Ectopic pregnancy"],
+    correctIndex: 2,
+    explanation: `The sudden onset of severe pain combined with an ovarian cyst and **reduced Doppler flow** is diagnostic for **Ovarian Torsion**. Reduced blood flow indicates ischemia, which is a surgical emergency. Ectopic is excluded by the negative pregnancy test.`
+},
+{
+    question: ` A 34-year-old woman, G2P2, presents for a routine check-up. She desires permanent contraception. Her pregnancies and deliveries were uncomplicated. She has no significant medical history.\nWhat is the most appropriate counseling point regarding laparoscopic tubal ligation?`,
+    options: ["It is 100% effective in preventing pregnancy.", "It protects against sexually transmitted infections.", "It is generally considered irreversible.", "It leads to immediate menopause."],
+    correctIndex: 2,
+    explanation: `Tubal ligation should be counseled as a **permanent and irreversible** method of sterilization. Reversal surgery is complex, costly, and not always successful. It is not 100% effective (failure rate ~1/200), does not protect against STIs, and does not cause menopause as the ovaries are left intact.`
+},
+{
+    question: ` A 40-year-old woman with a history of recurrent miscarriage (3 consecutive first-trimester losses) is undergoing investigation. All routine endocrine and genetic tests are normal. Hysterosalpingography reveals an abnormality in the uterine cavity.\nWhich of the following uterine anomalies is most commonly associated with recurrent miscarriage?`,
+    options: ["Unicornuate uterus", "Didelphys uterus", "Septate uterus", "Bicornuate uterus"],
+    correctIndex: 2,
+    explanation: `Among congenital uterine anomalies, the **Septate Uterus** is the one most strongly associated with recurrent first-trimester miscarriage. The septum is relatively avascular, leading to poor implantation and early pregnancy loss. Hysteroscopic resection of the septum significantly improves live birth rates.`
+},
+{
+    question: ` A 20-year-old woman presents with severe nausea and vomiting since her last menstrual period, which was 8 weeks ago. On examination, her uterus appears larger than expected for gestational age. Ultrasound reveals a "snowstorm" appearance with no fetal pole. Her beta-hCG level is extremely high.\nWhat is the most likely diagnosis?`,
+    options: ["Multiple pregnancy", "Missed abortion", "Hydatidiform mole", "Uterine fibroids"],
+    correctIndex: 2,
+    explanation: `The classic triad of hyperemesis (severe vomiting), a uterus larger than dates, and extremely high hCG is suggestive of Molar Pregnancy. The ultrasound finding of a **"snowstorm" appearance** (mixed echogenicity) without a fetus is diagnostic for a **Complete Hydatidiform Mole**.`
+},
+{
+    question: ` A 45-year-old woman complains of new-onset episodes of involuntary urine leakage accompanied by a strong, sudden urge to urinate that she cannot suppress. These episodes occur several times a day and at night.\nWhat is the most appropriate initial management for this type of incontinence?`,
+    options: ["Pelvic floor muscle exercises", "Vaginal pessary", "Anticholinergic medication", "Surgical repair"],
+    correctIndex: 2,
+    explanation: `The patient describes **Urge Incontinence** (Overactive Bladder). While conservative measures (bladder retraining) are the very first step, among the options provided, **Anticholinergic medication** (e.g., Oxybutynin, Solifenacin) is the standard pharmacological treatment. Pelvic floor exercises are primarily for stress incontinence (though helpful for urge), and surgery/pessaries are for stress incontinence or prolapse.`
+},
+{
+    question: ` A 26-year-old woman is referred for evaluation of infertility. She has regular menstrual cycles, but her partner's semen analysis shows severe oligoasthenoteratozoospermia. All other female investigations are normal.\nWhat is the most appropriate assisted reproductive technology (ART) for this couple?`,
+    options: ["Ovarian stimulation with Clomiphene Citrate", "Intrauterine insemination (IUI)", "In vitro fertilization (IVF) with intracytoplasmic sperm injection (ICSI)", "Donor sperm insemination"],
+    correctIndex: 2,
+    explanation: `Severe male factor infertility (low count, poor motility, poor morphology) means natural fertilization or IUI is unlikely to succeed. **ICSI (Intracytoplasmic Sperm Injection)**, where a single sperm is injected directly into an egg during IVF, is the treatment of choice for severe male factor infertility.`
+},
+{
+    question: ` A 52-year-old postmenopausal woman with a history of breast cancer (estrogen receptor positive) presents with severe hot flashes and vaginal dryness significantly impacting her quality of life.\nWhich of the following is the most appropriate approach for managing her menopausal symptoms?`,
+    options: ["Combined estrogen and progestin therapy", "Estrogen-only therapy", "Lifestyle modifications and non-hormonal therapies (e.g., SSRIs, vaginal moisturizers)", "Tibolone"],
+    correctIndex: 2,
+    explanation: `Systemic hormone replacement therapy (Estrogen/Progestin or Tibolone) is generally **contraindicated** in women with a history of breast cancer, especially estrogen-receptor positive tumors, as it increases the risk of recurrence. The management must rely on **non-hormonal options** (e.g., SSRIs/SNRIs for hot flashes, non-hormonal lubricants for dryness).`
+},
+{
+    question: ` A 23-year-old woman presents with persistent lower abdominal pain, dyspareunia, and painful bowel movements, especially during menstruation. She also reports difficulty conceiving for 1.5 years. A rectovaginal examination reveals a fixed, tender, retroverted uterus with nodularity in the cul-de-sac.\nWhat is the most likely diagnosis?`,
+    options: ["Pelvic inflammatory disease (chronic)", "Irritable bowel syndrome", "Deep infiltrative endometriosis", "Uterine adenomyosis"],
+    correctIndex: 2,
+    explanation: `The combination of dysmenorrhea, deep dyspareunia, dyschezia (painful bowel movements), and a tender, fixed retroverted uterus with **nodularity in the pouch of Douglas/cul-de-sac** is highly specific for **Deep Infiltrative Endometriosis** involving the rectovaginal septum.`
+},
+{
+    question: ` A 25-year-old woman presents with a several-month history of amenorrhea following a traumatic postpartum hemorrhage that required a manual removal of the placenta. Her prolactin and TSH levels are normal, and a progesterone challenge test fails to induce bleeding.\nWhat is the most likely diagnosis?`,
+    options: ["Polycystic Ovary Syndrome (PCOS)", "Sheehan's Syndrome", "Asherman's Syndrome", "Premature Ovarian Insufficiency"],
+    correctIndex: 2,
+    explanation: `Secondary amenorrhea following uterine trauma (PPH/Manual removal/D&C) combined with a failure to bleed after a progesterone challenge (indicating the outflow tract is obstructed or endometrium is absent) is diagnostic of **Asherman's Syndrome** (intrauterine adhesions). Sheehan's syndrome would typically present with low pituitary hormones (low TSH, failure to lactate), but here TSH/Prolactin are normal.`
+},
+{
+    question: ` A 32-year-old woman presents to the gynaecology clinic with her partner with concerns about difficulty conceiving for the past 18 months. She reports irregular menstrual cycles with occasional intermenstrual bleeding. She has no significant medical history and takes no regular medications. Her cervical screening test is normal and up to date. Her partner has had normal semen analysis results. On examination, she appears well with vital signs within normal limits. Investigations reveal: follicle stimulating hormone 6.2 IU/L (3.5-12.5), luteinizing hormone 4.8 IU/L (2.4-12.6), day 21 progesterone 35 nmol/L (>30), and normal thyroid function tests. Transvaginal ultrasound shows a 15 mm echogenic lesion within the endometrial cavity.\nWhich one of the following is the most appropriate next step in management?`,
+    options: ["Diagnostic laparoscopy and tube dye studies", "Clomiphene citrate therapy", "Hysteroscopy with polypectomy", "Expectant management with serial ultrasound monitoring", "Oral progestogen therapy"],
+    correctIndex: 2,
+    explanation: `The patient has a **15 mm endometrial lesion** (likely a polyp) causing intermenstrual bleeding and potentially acting as a mechanical barrier to implantation (infertility). Her ovulation is confirmed (Day 21 progesterone > 30). The definitive diagnosis and treatment is direct visualization and removal via **Hysteroscopy with polypectomy**. This is known to improve spontaneous pregnancy rates.`
+},
+{
+    question: ` A 45-year-old woman with a BMI of 38 kg/m ² and a history of deep vein thrombosis (DVT) 5 years ago (provoked by surgery) complains of severe vasomotor symptoms affecting her sleep. She has a uterus.\nWhat is the safest therapeutic option for her menopausal symptoms?`,
+    options: ["Oral conjugated equine estrogens + Medroxyprogesterone acetate.", "Transdermal estradiol patch + Micronized progesterone.", "Oral Raloxifene.", "Clonidine."],
+    correctIndex: 1,
+    explanation: `Oral estrogen increases the risk of VTE and is contraindicated in women with a significant history of DVT or high BMI. **Transdermal estrogen** (patch or gel) bypasses the first-pass hepatic metabolism and does not significantly increase the risk of coagulation activation or VTE. It is the preferred route for women with VTE risk factors. Since she has a uterus, she needs progesterone; micronized progesterone is considered thromboneutral.`
+},
+{
+    question: ` A 68-year-old woman presents with severe vulval itching. Examination reveals white, thinned, "cigarette paper" crinkling of the skin on the labia minora and resorption of the labial architecture. There are no distinct ulcerations. What is the most likely diagnosis?`,
+    options: ["Vulval candidiasis", "Lichen sclerosus", "Lichen planus", "Paget’s disease of the vulva"],
+    correctIndex: 1,
+    explanation: `The classic description of **Lichen Sclerosus** includes severe itching and skin changes described as white, thinned, atrophic, or **"cigarette paper"** skin, often with loss of anatomical architecture (resorption of labia minora).`
+},
+{
+    question: ` A 25-year-old woman presents with a painful, fluctuant, golf-ball-sized swelling at the 5 o'clock position of the vulva. She cannot sit comfortably. What is the most appropriate management?`,
+    options: ["Antibiotics only", "Incision and Drainage (simple)", "Marsupialization or Word Catheter insertion", "Excision of the gland"],
+    correctIndex: 2,
+    explanation: `This is a **Bartholin's Abscess**. Antibiotics alone are ineffective for a formed abscess. Simple Incision and Drainage (I&D) has a very high recurrence rate as the opening closes. The standard of care is **Marsupialization** (suturing the cyst wall to the skin) or insertion of a **Word Catheter** to keep the tract open and allow permanent drainage.`
+},
+{
+    question: ` A 22-year-old woman presents with lower abdominal pain and deep dyspareunia. On examination, she has cervical motion tenderness and adnexal tenderness. Temperature is 37.8°C. Pregnancy test is negative. What is the most appropriate outpatient antibiotic regimen?`,
+    options: ["Oral Doxycycline + Oral Metronidazole", "Intramuscular Ceftriaxone (single dose) + Oral Doxycycline + Oral Metronidazole", "Oral Azithromycin single dose", "Oral Ciprofloxacin + Oral Clindamycin"],
+    correctIndex: 1,
+    explanation: `The clinical diagnosis is Pelvic Inflammatory Disease (PID). Current guidelines (e.g., CDC, BASHH) recommend broad-spectrum coverage for Gonorrhea, Chlamydia, and Anaerobes. The standard outpatient regimen is a single dose of **IM Ceftriaxone** (for Gonorrhea) followed by **Oral Doxycycline** (for Chlamydia) and **Oral Metronidazole** (for anaerobes).`
+},
+{
+    question: ` A 20-year-old woman presents with primary amenorrhea. She has normal breast development but absent pubic and axillary hair. On examination, she has a blind-ending vagina, and no cervix or uterus are palpable. Karyotype reveals 46,XX.\nWhat is the most likely diagnosis?`,
+    options: ["Turner Syndrome", "Mullerian agenesis (Rokitansky-Kuster-Hauser syndrome)", "Androgen Insensitivity Syndrome (AIS)", "Imperforate hymen"],
+    correctIndex: 1,
+    explanation: `The patient has a 46,XX karyotype, normal breast development (functioning ovaries producing estrogen), but absent uterus and upper vagina (Mullerian structures). This is **Mullerian Agenesis (MRKH Syndrome)**. *Note on the question text provided*: The prompt describes "absent pubic and axillary hair". This is actually classic for AIS (XY), whereas MRKH (XX) usually has normal hair. However, if the Karyotype is **XX** (as stated in this specific question text), the diagnosis *must* be Mullerian Agenesis, despite the hair description (which might be an error in the question source, but XX definitively rules out AIS).`
+},
+{
+    question: ` A 17-year-old consults you for evaluation of disabling pain with her menstrual periods. The pain has been present since menarche, and is accompanied by nausea and headache. Her medical history is otherwise unremarkable, and pelvic examination is normal. She is not currently sexually active, and she has not tried any therapy for her dysmenorrhea. What is the best treatment option for her?`,
+    options: ["Acupuncture", "Prostaglandin inhibitors", "Gonadotropin-releasing hormone (GnRH) analogues", "Oral contraceptives", "Narcotic analgesics"],
+    correctIndex: 1,
+    explanation: `This is Primary Dysmenorrhea. It is mediated by elevated prostaglandin F2-alpha. The first-line pharmacological treatment is **Prostaglandin inhibitors (NSAIDs)**. Oral contraceptives are second-line or for those needing contraception.`
+},
+{
+    question: ` A 35-year-old G2P2 presents for a contraceptive counseling visit. She and her husband desire a long-term contraceptive method, and are uncertain if they want more children. She has been happily married for 10 years. Her only medical problem is mild hypertension, for which she takes a diuretic, and she has never had a sexually transmitted disease. She is considering the copper IUD and wants to know how it works. Which of the following mechanisms does not potentially contribute to the mechanism of the action of the copper IUD?`,
+    options: ["Decreased tubal motility inhibits ovum transport.", "An inflammatory response within the endometrium damages the fertilized ovum.", "Premature endometrial sloughing associated with menorrhagia causes early abortion.", "An inflammatory response within the endometrium kills sperm.", "Thickened cervical mucus blocks sperm transport."],
+    correctIndex: 4,
+    explanation: `The Copper IUD works by releasing copper ions which are toxic to sperm (spermicidal) and creating a sterile inflammatory reaction in the endometrium that prevents implantation. **Thickening of cervical mucus** is the mechanism of action of **Progesterone**-containing contraceptives (like the Mirena IUS or POP), not the Copper IUD.`
+},
+{
+    question: ` A 22-year-old woman consults you for treatment of hirsutism. Physical examination demonstrates facial acne, as well as dark, course hair on her upper lip, chin, and midsternum. She has a BMI of 35 kg/m2. Serum LH level is 35 mIU/mL and FSH is 9 mIU/mL. Androstenedione and testosterone levels are mildly elevated, but serum DHEA-S is normal. The patient does not wish to conceive at this time.\nWhich of the following single agents is the most appropriate treatment of her condition?`,
+    options: ["Oral contraceptives", "Corticosteroids", "GnRH agonists", "Metformin", "Spironolactone"],
+    correctIndex: 0,
+    explanation: `The patient has clinical and biochemical signs of PCOS (High LH:FSH ratio, hirsutism, BMI 35). For a patient with hirsutism who does **not** wish to conceive, the first-line pharmacological management is the **Combined Oral Contraceptive Pill**. It suppresses LH (reducing ovarian androgen production) and increases Sex Hormone Binding Globulin (SHBG), which binds free testosterone. Spironolactone is an adjunct, and Metformin is primarily for metabolic/ovulation issues.`
+}
+    ];
+    
+    /**
+     *  APPLICATION STATE
+     */
+    let currentQuestionIndex = 0; // Starts at 0 (Question 1)
+    let userAnswers = new Array(questions.length).fill(null); 
+    let timeRemaining = 180 * 60; // 180 minutes in seconds
+    let timerInterval;
+    let isExamFinished = false;
+
+    /**
+     *  INITIALIZATION
+     */
+    window.onload = function() {
+        try {
+            renderPalette();
+            loadQuestion(0);
+            startTimer();
+            updateProgress();
+        } catch (e) {
+            console.error("Initialization Error:", e);
+            document.getElementById('q-text').textContent = "Error loading questions. Please check the data format.";
+        }
+    };
+
+    /**
+     *  CORE FUNCTIONS
+     */
+
+    function loadQuestion(index) {
+        currentQuestionIndex = index;
+        const qData = questions[index];
+
+        // Update Header Info
+        document.getElementById('q-number').textContent = `Question ${index + 1} of ${questions.length}`;
+        const statusEl = document.getElementById('q-status');
+        if (userAnswers[index] !== null) {
+            statusEl.textContent = "Answered";
+            statusEl.style.color = "var(--answered)";
+        } else {
+            statusEl.textContent = "Not Answered";
+            statusEl.style.color = "#999";
+        }
+
+        // Render Text
+        document.getElementById('q-text').textContent = qData.question;
+
+        // Render Options (Dynamic Loop)
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = ''; // Clear previous
+
+        qData.options.forEach((optText, optIndex) => {
+            const el = document.createElement('div');
+            el.className = 'option-item';
+            if (userAnswers[index] === optIndex) {
+                el.classList.add('selected');
+            }
+            
+            // Allow click only if exam not finished (though logic separates views)
+            if(!isExamFinished) {
+                el.onclick = () => selectOption(index, optIndex);
+            }
+
+            el.innerHTML = `
+                <div class="option-marker"></div>
+                <div class="option-text">${optText}</div>
+            `;
+            optionsContainer.appendChild(el);
+        });
+
+        updatePaletteActiveState();
+        updateNavButtons();
+    }
+
+    function selectOption(qIndex, optIndex) {
+        userAnswers[qIndex] = optIndex;
+        
+        // Re-render current options to show selection
+        const opts = document.querySelectorAll('.option-item');
+        opts.forEach((el, i) => {
+            if (i === optIndex) el.classList.add('selected');
+            else el.classList.remove('selected');
+        });
+
+        // Update Status Text
+        const statusEl = document.getElementById('q-status');
+        statusEl.textContent = "Answered";
+        statusEl.style.color = "var(--answered)";
+
+        // Update Palette Color
+        const paletteBtn = document.getElementById(`p-btn-${qIndex}`);
+        paletteBtn.classList.add('answered');
+
+        updateProgress();
+    }
+
+    function changeQuestion(delta) {
+        const newIndex = currentQuestionIndex + delta;
+        if (newIndex >= 0 && newIndex < questions.length) {
+            loadQuestion(newIndex);
+        }
+    }
+
+    function jumpToQuestion(index) {
+        loadQuestion(index);
+    }
+
+    function renderPalette() {
+        const container = document.getElementById('palette-container');
+        container.innerHTML = '';
+        
+        questions.forEach((_, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'p-btn';
+            btn.id = `p-btn-${i}`;
+            btn.textContent = i + 1;
+            btn.onclick = () => jumpToQuestion(i);
+            container.appendChild(btn);
+        });
+    }
+
+    function updatePaletteActiveState() {
+        document.querySelectorAll('.p-btn').forEach((btn, i) => {
+            if (i === currentQuestionIndex) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    function updateNavButtons() {
+        document.getElementById('btn-prev').disabled = currentQuestionIndex === 0;
+        document.getElementById('btn-next').disabled = currentQuestionIndex === questions.length - 1;
+        
+        // Visual disable style
+        document.getElementById('btn-prev').style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+        document.getElementById('btn-next').style.opacity = currentQuestionIndex === questions.length - 1 ? '0.5' : '1';
+    }
+
+    function updateProgress() {
+        const answeredCount = userAnswers.filter(a => a !== null).length;
+        document.getElementById('progress-text').textContent = `${answeredCount} / ${questions.length} Answered`;
+    }
+
+    /**
+     *  TIMER LOGIC
+     */
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            
+            const hours = Math.floor(timeRemaining / 3600);
+            const minutes = Math.floor((timeRemaining % 3600) / 60);
+            const seconds = timeRemaining % 60;
+            
+            // Format HH:MM:SS or MM:SS
+            let displayString = "";
+            if(hours > 0) {
+                 displayString = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                 displayString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            document.getElementById('timer').textContent = displayString;
+
+            // Panic color (last 5 mins)
+            if(timeRemaining < 300) { 
+                document.getElementById('timer').style.color = "#ff6b6b";
+            }
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                finishExam(true); // Force submit
+            }
+        }, 1000);
+    }
+
+    /**
+     *  SUBMISSION & RESULTS logic
+     */
+    function showSubmitModal() {
+        document.getElementById('submit-modal').style.display = 'flex';
+    }
+
+    function closeSubmitModal() {
+        document.getElementById('submit-modal').style.display = 'none';
+    }
+
+    function finishExam(forced = false) {
+        isExamFinished = true;
+        clearInterval(timerInterval);
+        closeSubmitModal();
+
+        // Calculate Score
+        let correctCount = 0;
+        userAnswers.forEach((ans, i) => {
+            if (ans === questions[i].correctIndex) {
+                correctCount++;
+            }
+        });
+
+        const percentage = Math.round((correctCount / questions.length) * 100);
+
+        // Render Results Screen
+        document.getElementById('quiz-view').style.display = 'none';
+        document.getElementById('results-screen').style.display = 'block';
+
+        // Update Score Header
+        document.getElementById('score-display').textContent = `${percentage}%`;
+        document.getElementById('score-fraction').textContent = `${correctCount} / ${questions.length}`;
+        
+        const passLabel = document.getElementById('pass-fail-label');
+        if (percentage >= 50) {
+            passLabel.textContent = "PASSED";
+            passLabel.className = "pass-label pass";
+        } else {
+            passLabel.textContent = "FAILED";
+            passLabel.className = "pass-label fail";
+        }
+
+        // Render Detailed Review
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+
+        questions.forEach((q, i) => {
+            const userAnswer = userAnswers[i];
+            const isCorrect = userAnswer === q.correctIndex;
+            const itemClass = isCorrect ? 'correct' : 'incorrect';
+            
+            // Build Options HTML
+            let optionsHTML = '';
+            q.options.forEach((opt, optIdx) => {
+                let optClass = 'opt-review';
+                
+                // Highlight logic
+                if (optIdx === q.correctIndex) {
+                    optClass += ' correct-answer'; // Always show correct answer
+                }
+                if (userAnswer === optIdx && !isCorrect) {
+                    optClass += ' user-selected-wrong'; // Show if user picked wrong
+                } 
+
+                optionsHTML += `<div class="${optClass}">${opt}</div>`;
+            });
+
+            const html = `
+                <div class="review-item ${itemClass}">
+                    <div style="font-weight:bold; color:#555; margin-bottom:10px;">Question ${i+1}</div>
+                    <div style="font-size:1.1rem; margin-bottom:1rem;">${q.question}</div>
+                    <div>${optionsHTML}</div>
+                    <div class="explanation-box">
+                        <strong>Explanation:</strong> ${q.explanation}
+                    </div>
+                </div>
+            `;
+            reviewContainer.innerHTML += html;
+        });
+    }
+
+</script>
+</body>
+</html>
